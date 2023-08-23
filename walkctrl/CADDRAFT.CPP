@@ -1,1 +1,2804 @@
-/*------------------------------------------------------------------------------ * Virtus WalkThrough_ * Version 1.1.1 * * Copyright _ 1990-1992 by Virtus Corporation * All Rights Reserved * Written by   *				 *				Mark J. Uland * Virtus Corporation * Suite 204 * 117 Edinburgh South * Cary, North Carolina    27511 * (919) 467-9700 *------------------------------------------------------------------------------ * Source File:  * Notes:  * History:  * Platform: 	MACINTOSH 	X *				WINDOWS		X *------------------------------------------------------------------------------ */#include "VTypes.h"#include "CadDraft.h"#include "RuleItem.h"#include "CadCntrl.h"#include "CVEnvirn.h"#include "CVDefs.h"#include "PolyDefs.h"#include "Misc.h"#include "Geometry.h"#include "CadPosn.h"#include "CVPolyh.h"#include "AppMssgs.h"#include "AppText.h"#include "AppDeflt.h"#include "Button.h"#include "ToolDef.h"#include "Ruler.h"#include "WMenus.h"/* THIS IS FOR PRIORITY enum */#include "CVLItem.h"#include "DlogPref.h"#include "EPSF.h"#include "imgHandl.h"#include "BMPHandl.h"#include "TIFHandl.h"#include "Informtn.h"#include "SinTable.h"#include "VMath.h"#include "VGraphic.h"#include "VGUtil.h"#include "VSound.h"#include "VWindow.h"#include "VFile.h"#include "VError.h"#include "VTextDef.h"#include "CVWCntrl.h"#include "AppText.h"	//PRO-JAP#include <stdio.h>#include <stdlib.h>#include <math.h>#include "Surface.h"	// MERGE-GOURAUD#if VR#include "Walkthru.h"#endif#define 	SCROLL_SPEED	15char rotateChar = ROTATE_ANCHOR;char selectChar = SELECT_CROSS; 		PointFFixed BuildScale(Point p1,Point p2,Point anch,int constrain);PointFFixed BuildScale(Point p1,Point p2,Point anch,int constrain)	{	PointFFixed scal;	p1.h -= anch.h;	p1.v -= anch.v;	p2.h -= anch.h;	p2.v -= anch.v;	if(p1.h&&p2.h) scal.h = DblToFixed((double)p1.h/(double)p2.h); else scal.h = FFOne; 	if(p1.v&&p2.v) scal.v = DblToFixed((double)p1.v/(double)p2.v); else scal.v = FFOne;		if(constrain)		{		FFMax(scal.h,scal.h,scal.v);		scal.v = scal.h;		}	return scal;	}void CadDraft::SetController(Controller *ctrl) 	{	CAVEnvironment	*e;	controller = ctrl;	if(ctrl->information && ctrl->information->environment) 		{		e = ctrl->information->environment;		environment->SetView(e->GetView());			environment->SetID(e->GetID());		ctrl->information->environment = environment;		}	}	void CadDraft::cPane(int flag) 	{					Draft::cPane(flag);			editList = new(V_Array);	editList->cArray(0,sizeof(void*),8);/* evil */		horzGrid = NULL;	vertGrid = NULL;	horzGuide = NULL;	vertGuide = NULL;		tempPoints = new(V_Array);	tempPoints->cArray(0,sizeof(PointLong),4);	tempFFPoints = new(V_Array);	tempFFPoints->cArray(0,sizeof(PointFFixed),4);	environment = new(CAVEnvironment);	environment->cCAVEnvironment();		angle = FFZero;	editTool = bARROW;	draftAction = FALSE;	editFlags = FALSE;	editMode = modeNone;	editAction = modeNone;	constrainMode = constrainNone;				peerList = NULL;			currentModifier = 0;	lastModifier = 0;	currentScale = PtFFOne;	lastScale = PtFFOne;		SetHSpeed(SCROLL_SPEED);	SetVSpeed(SCROLL_SPEED);	GridOn(TRUE);	GridColor(vBlack);	GuideColor(vBlack);	}void CadDraft::dPane() 	{	editList->dArray();	tempPoints->dArray();	tempFFPoints->dArray();	environment->dCAVEnvironment();        // jca 8APR94 delete the environment	Draft::dPane();	}void CadDraft::CalcSize(Rect *r,Point *p,int type,int warning)	{	controller->GetPlace(r,warning,toolCCad);	}void CadDraft::Display(int type,int x,int y)	{	Rect		r,tr;	FFixed		oldScale;	Point		p;	Point		end;	int			update;	extern int gCurrentlyDoingIO;	//MERGE-PRO-JAM-2 fixes 6-button crash & crash on screen-save return	if(gCurrentlyDoingIO) return;	//MERGE-PRO-JAM-2	SetMetaPort();		tr = dataRect;	switch(type)		{		case PICT_DRAW:				Draft::Display(type,x,y);			lOrigin.h = FFLongMult(scale2Local,origin.h);			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));			MakeWorldRect(&r,0,0,min(worldMax.v,dataRect.bottom),min(worldMax.h,dataRect.right));			environment->SetPenSizes(1,1);		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth); 	 		update = FALSE;			break;					case PRINT_DRAW:			    oldScale = scale2Local;			Draft::Display(type,x,y);			lOrigin.h = FFLongMult(scale2Local,origin.h);			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));			MakeWorldRect(&r,0,0,min(worldMax.v,paneRect.bottom),min(worldMax.h,paneRect.right));			environment->SetPenSizes(1,1);   // ABD changed from 3,3 JAN95		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth);		    scale2Local = oldScale; 	 		update = FALSE;			break;				default:			Draft::Display(type,x,y);		    origin = pcc(controller)->SetOrigin(origin);			lOrigin.h = FFLongMult(scale2Local,origin.h);			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));			MakeWorldRect(&r,0,0,min(worldMax.v,dataRect.bottom),min(worldMax.h,dataRect.right));			environment->SetPenSizes(1,1);		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth);		    if(displayFlags && horzGrid && vertGrid)		    	DrawGrid(); 	 		update = TRUE;	       	break;        }       		DrawContent(type);		MetaCopy(&tr);	UnsetMetaPort();		if(update)		{		pcc(controller)->Display(type);	    SetPane();	    }	}		#if VRML_ANCHOR		// ABD PRO25 AUG95voidCadDraft::DrawURL(Point p, int redraw_only){	// do nothing -- up to subclasses to override this routine and draw something}#endifvoid  CadDraft::DrawContent(int type)	{			RulerItemDef	*itemDef;	RulerItem	**pItem;	PointFFixed	wPt;	Point		end,p;	RGBColor	col;	TickMark	*tickMark;	short		*pt,myAxis;	int			length,i;	if(bPOLY_ROOM == editTool && PICT_DRAW != type && PRINT_DRAW != type)		DrawTempPoints();	if(dataRect.right>worldMax.h)end.h = worldMax.h; else end.h = dataRect.right;   	if(dataRect.bottom>worldMax.v)end.v = worldMax.v; else end.v = dataRect.bottom;   		if(displayFlags & DRAW_GUIDE)		{		myAxis = environment->GetAxis();				if(horzGuide && (length = horzGuide->ALength()))			{							wPt = PtFFZero;			pItem = (RulerItem**)horzGuide->Use();			if(DrawInColor()) 				{				itemDef = (*pItem)->GetItemDef();				col = itemDef->GetColor();				VForeColor(&col);				}			else 				VSetPattern(vPatBlack);			for(i = 0 ; i < length; i++,pItem++)				{				itemDef = (*pItem)->GetItemDef();				p.h = (*pItem)->scaleValue;				VMoveTo(p.h,0);				VLineTo(p.h,end.v);				}			horzGuide->Unuse();			}					if(vertGuide && (length = vertGuide->ALength()))			{			wPt = PtFFZero;			pItem = (RulerItem**)vertGuide->Use();			if(DrawInColor()) 				{				itemDef = (*pItem)->GetItemDef();				col = itemDef->GetColor();				VForeColor(&col);				}			else 				VSetPattern(vPatBlack);			for(i = 0 ; i < length; i++,pItem++)				{				itemDef = (*pItem)->GetItemDef();				p.v = (*pItem)->scaleValue;				VMoveTo(0,p.v);				VLineTo(end.h,p.v);				}			vertGuide->Unuse();			}		}	   	#if VRML_ANCHOR		// ABD PRO25 AUG95	   	if(displayFlags & DRAW_URL)	   		DrawURL(p, TRUE);	// p is ignored if redraw_only is TRUE	   	#endif	}voidCadDraft::DrawGrid()	{	RulerItemDef	*itemDef;	RulerItem	**pItem;	PointFFixed	wPt;	Point		end,p;	RGBColor	col;	TickMark	*tickMark;	short		*pt,myAxis;	int			length,i;	if(dataRect.right>worldMax.h)end.h = worldMax.h; else end.h = dataRect.right;   	if(dataRect.bottom>worldMax.v)end.v = worldMax.v; else end.v = dataRect.bottom;		if(displayFlags & DRAW_GRID)		{	   	if(DrawInColor())	   	 	VForeColor(&gridColor);	   	 else	   	 	 VSetPattern(vPatGray);	   	 		    length = horzGrid->ALength();	    tickMark = (TickMark*)horzGrid->Use();	    for(i = 0; i < length; i++,tickMark++)	    	{	    	if(unitTick==tickMark->type)	    		{	    		VMoveTo(tickMark->where,0); 	    		VLineTo(tickMark->where,end.v);	    		} 	    	}	    horzGrid->Unuse();	    length = vertGrid->ALength();	    tickMark = (TickMark*)vertGrid->Use();	    for(i = 0; i < length; i++,tickMark++)	    	{	    	if(unitTick==tickMark->type)	    		{	    		VMoveTo(0,tickMark->where); 	    		VLineTo(end.h,tickMark->where);	    		} 	    	}	    vertGrid->Unuse();		}	if(displayFlags & DRAW_ORIGIN)		{		itemDef = hLocalOrigin->GetItemDef();		p.h = hLocalOrigin->scaleValue;		if(DrawInColor()) 			{			col = itemDef->GetColor();			VForeColor(&col);			}		else 	   	 	 VSetPattern(vPatBlack);					VMoveTo(p.h,0);		VLineTo(p.h,end.v);		itemDef = vLocalOrigin->GetItemDef();		p.v = vLocalOrigin->scaleValue;					VMoveTo(0,p.v);		VLineTo(end.h,p.v);		}		}		void  CadDraft::DrawTempPoints()	{		Rect	r;	PointLong *tmpPt,drawOrigin;	int		i,length;    if(!(length = tempPoints->ALength())) return;        VPenMode(vPatXor);      drawOrigin = environment->GetDrawOrigin();	tmpPt = (PointLong *)tempPoints->Use();	VMoveTo(tmpPt->h - drawOrigin.h,tmpPt->v - drawOrigin.v);	tmpPt++;	for(i = 1; i < length; i++,tmpPt++) 		VLineTo(tmpPt->h - drawOrigin.h,tmpPt->v - drawOrigin.v);	tempPoints->Unuse();	VPenMode(vPatCopy);		if(editFlags&EDIT_ANCHOR)		{		VTextMode(vSrcXor); 		TextSetUp(vButtonFont,vButtonFontSize,vNormal);	 		r.left = dropAnchor.h-7; 		r.bottom = dropAnchor.v-5; 		r.top=r.bottom-vButtonFontSize;		VDrawChar(rotateChar,&r);		VTextMode(vSrcOr);		}			}	void  CadDraft::ResetTools()	{		if(modeNone == editMode) return;	SetPane();	     	DrawTempPoints(); 	SetBuildPoint(PtFFZero,PtZero,FALSE); 	editFlags = FALSE; 	DrawMarquee(TRUE);    VPenMode(vPatXor);   	VMoveTo(anchorPosition.h,anchorPosition.v);	VLineTo(lastPosition.h,lastPosition.v);			VPenMode(vPatCopy);	UnsetPane();		SetTrackMode(POSITION_TRACK);	}// { DAS-VR-VRTOOLS 8/22/93 turning off some, turning on others.void  CadDraft::MouseDown(Point p,long modifiers)	{			PointFFixed	worldPt;		currentPositionR = p;	currentPosition = p;	currentModifier = modifiers;	editFlags &= ~EDIT_CURSOR_MOVE;	worldPt = Constrain(&p,currentModifier);	currentPosition = p;	anchorPosition = currentPosition;	lastPosition = currentPosition;		editTool = pcc(controller)->GetEditTool();	downTime = VGetTime();	SetBuildPoint(worldPt,currentPosition,TRUE);	if (environment) environment->SetPatternOrigin();		switch(editTool)		{#if VWT		case bHAND:  			Hand(currentPosition,currentModifier,MOUSE_DOWN); 			break;							case bROTATE_ROOM: 		case bSCALE_ROOM:			RotateObject(currentPosition,currentModifier,MOUSE_DOWN); 			break;					case bARROW:		case bPLUS_MINUS:		case bHIDE: 		case bLOCK: 		case bSKEW_TOOL:		case bDROPPER:			SelectObject(currentPosition,currentModifier,MOUSE_DOWN);  			break;					case bMEASURE_TOOL:		case bZOOM_USER:		case bZOOMIN:		// MERGE-GOURAUD-PRO		case bRECT_ROOM:		case bPOLY_ROOM:		case bREGPOLY_ROOM: 		case bCUT_ROOM: 			ConstructObject(currentPosition,currentModifier,MOUSE_DOWN); 			break;					case bSURFACE_EDITOR:		case bTUMBLE_EDITOR:		case bLIGHT_EDITOR: 			#elif VR		case bSCALE_ROOM:		case bROTATE_ROOM:			RotateObject(currentPosition,currentModifier,MOUSE_DOWN); 			break;					case bARROW:		case bSHAPE:			SelectObject(currentPosition,currentModifier,MOUSE_DOWN);  			break;//		case bZOOMIN:	//MERGE-GOURAUD-PRO//		case bZOOMOUT:	//MERGE-GOURAUD-PRO		case bSURFACE_EDITOR:			break;#endif #if ((VR) || (VPRO))		// MERGE-GOURAUD-PRO		//case bZOOMIN:		// MERGE-GOURAUD-PRO		case bZOOMOUT:		// MERGE-GOURAUD-PRO			break;#endif		default:			break;		}	}voidCadDraft::TrackHelp(Point pt, long modifier) // DAS-VWINDOWS 9/30/93	{	Rect r;		r=dataRect;	/* Bubble(pt,&r,TXTB_DESEDITR);*/	}static int lastInside = FALSE;void  CadDraft::Track(Point p,long modifiers,int inside)	{			int	changing,thisEvent,mDown;	Point3DFFixed	wPnt,aPnt,wp;	PointFFixed		worldPt;	Angle3DFFixed	wAgl;	Rect			dRect;    int				scrollWidth;		currentPositionR = p;	currentPosition = p;	currentModifier = modifiers;	mDown = buttonDown & currentModifier;#if WINDOWS	// On Windows, the scroll bars are on top of the dataRect. Use a	// rect inside the scroll bars for the "Push" calculations.	dRect=dataRect;    scrollWidth=VScrollWidth();	dRect.right-=scrollWidth;    dRect.bottom-=scrollWidth;	inside=VPtInRect(p,&dRect);#endif //WINDOWS	if(inside)			thisEvent = MOUSE_TRACK; 	else		{		if(!mDown||( modeNone == editMode)) 			{ 			if(lastInside!=inside)				{				pcc(controller)->ClearTrack(); 				lastInside = inside; 				}			return; 			}		else thisEvent = MOUSE_PUSH;		}		lastInside = inside;		editTool = pcc(controller)->GetEditTool();			if(mDown /* && (appDelayTime > (VGetTime() - downTime)) */ )		downTime = -1;		worldPt = Constrain(&p,currentModifier);	if(MOUSE_PUSH != thisEvent)		currentPosition = p;	if(CursorMove(currentPosition,lastPosition)) editFlags |= EDIT_CURSOR_MOVE; 	else editFlags &= ~EDIT_CURSOR_MOVE;		#if VRML_ANCHOR	if(displayFlags & DRAW_URL)		DrawURL(p, FALSE);	#endif	switch(editTool)		{		#if VWT		case bTUMBLE_EDITOR:		case bLIGHT_EDITOR: 			VSetCursor(vCursorArrow);  			break;		case bSURFACE_EDITOR: 			VSetCursor(vCursorCross);  			break;		case bHAND: 			VSetCursor(vCursorHand);  			Hand(currentPosition,currentModifier,thisEvent);			break;		case bHIDE: 			VSetCursor(vCursorHide);  			SelectObject(currentPosition,currentModifier,thisEvent); 			break;		case bLOCK: 			VSetCursor(vCursorLock);  			SelectObject(currentPosition,currentModifier,thisEvent); 			break;		case MOVE_EYE:		case ROTATE_EYE:		case bARROW:		case bSKEW_TOOL:			VSetCursor(vCursorArrow); 			SelectObject(currentPosition,currentModifier,thisEvent); 			break;		case bCONNECTOR: 			VSetCursor(vCursorConnect); 			SelectObject(currentPosition,currentModifier,thisEvent); 			break;		case bMEASURE_TOOL:		case bRECT_ROOM:		case bREGPOLY_ROOM:		case bZOOM_USER:			VSetCursor(vCursorCross);			ConstructObject(currentPosition,currentModifier,thisEvent);			break;#if VPRO	// MERGE-GOURAUD-PRO-2		case bZOOMIN:	// MERGE-GOURAUD-PRO			if (modifiers&V_OPTION)				VSetCursor(vCursorZoomOut);			else				VSetCursor(vCursorZoomIn);			ConstructObject(currentPosition,currentModifier,thisEvent);			break;#endif // VPRO		case bCUT_ROOM:		case bPOLY_ROOM:			VSetCursor(vCursorCross);			if(!inside)SetPane();			ConstructObject(currentPosition,currentModifier,thisEvent);			break;		case bSCALE_ROOM:		case bROTATE_ROOM:			VSetCursor(vCursorCross);			RotateObject(currentPosition,currentModifier,thisEvent);			break;		case bPLUS_MINUS: 			VSetCursor(vCursorCross); 			SelectObject(currentPosition,currentModifier,thisEvent); 			break;				case bDROPPER:			VSetCursor(vCursorDropper); 			SelectObject(currentPosition,currentModifier,thisEvent); 			break;				case bFINGER: /* for tumble editor */			VSetCursor(vCursorFinger);			break;#elif VR		case bSCALE_ROOM:		case bROTATE_ROOM:			VSetCursor(vCursorCross);			RotateObject(currentPosition,currentModifier,thisEvent);			break;					case MOVE_EYE:		case ROTATE_EYE:		case bARROW:			VSetCursor(vCursorArrow); 			SelectObject(currentPosition,currentModifier,thisEvent); 			break;		case bSHAPE:			VSetCursor(vCursorArrow);			break;#if 0 //MERGE-GOURAUD-PRO		case bZOOMIN:			if (modifiers&V_OPTION)				VSetCursor(vCursorZoomOut);			else				VSetCursor(vCursorZoomIn);			break;		case bZOOMOUT:			if (modifiers&V_OPTION)				VSetCursor(vCursorZoomIn);			else				VSetCursor(vCursorZoomOut);			break;#endif	//MERGE-GOURAUD-PRO		case bSURFACE_EDITOR:			VSetCursor(vCursorCross);  			break;#endif			#if VR		case bZOOMIN:		// MERGE-GOURAUD-PRO			if (modifiers&V_OPTION)				VSetCursor(vCursorZoomOut);			else				VSetCursor(vCursorZoomIn);			break;#endif // VR#if  ((VR) || (VPRO))		// MERGE-GOURAUD-PRO		case bZOOMOUT:		// MERGE-GOURAUD-PRO			if (modifiers&V_OPTION)				VSetCursor(vCursorZoomIn);			else				VSetCursor(vCursorZoomOut);			break;#endif //  ((VR) || (VPRO))		default:			break;		}	/* lastPosition = currentPosition;*/	}void  CadDraft::MouseUp(Point p,long modifiers)	{		PointFFixed worldPt;	Track(p,modifiers|buttonDown,VPtInRect(p,&dataRect)); // DAS-VR-FIX 9/22/93  // jca 27 Sept 93  (corrected the fix)	currentPositionR = p;	currentPosition = p;	currentModifier = modifiers;	worldPt = Constrain(&p,modifiers);	currentPosition = p;	if( bPOLY_ROOM != editTool )		SetBuildPoint(worldPt,currentPosition,TRUE);	if(CursorMove(anchorPosition,currentPosition)) editFlags |= EDIT_CURSOR_MOVE; 	else editFlags &= ~EDIT_CURSOR_MOVE;	// MERGE-GOURAUD-PRO-2 [[[	// let zoom tool be a lot more sloppy	if (editTool == bZOOMIN)	{		if(CursorMoveMore(anchorPosition,currentPosition)) editFlags |= EDIT_CURSOR_MOVE; 		else editFlags &= ~EDIT_CURSOR_MOVE;	}	// MERGE-GOURAUD-PRO-2 ]]]	ffLastPt = worldPt;	lastPositionR = World2Local(ffLastPt,SCALE_ABSOLUTE);			switch(editTool)		{#if VWT		case bHAND: 			Hand(currentPosition,currentModifier,MOUSE_UP); 			break;		case MOVE_EYE:		case ROTATE_EYE:		case bARROW:		case bPLUS_MINUS:		case bSKEW_TOOL:		case bCONNECTOR:		case bHIDE: 		case bLOCK: 		case bDROPPER:			SelectObject(currentPosition,currentModifier,MOUSE_UP); 			break;		case bZOOMIN:		// MERGE-GOURAUD-PRO		{			if (editFlags & EDIT_CURSOR_MOVE)			{				ConstructObject(currentPosition,currentModifier,MOUSE_UP);			}			else			{				if (modifiers&V_OPTION)					pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);				else					pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);				pcc(controller)->Request(NULL,msgUpdate,objTools,0);				SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93			}		}		break;		case bMEASURE_TOOL:		case bZOOM_USER:		case bRECT_ROOM:		case bCUT_ROOM:		case bREGPOLY_ROOM: 		case bPOLY_ROOM:			ConstructObject(currentPosition,currentModifier,MOUSE_UP);			break;		case bSCALE_ROOM:		case bROTATE_ROOM: 			RotateObject(currentPosition,currentModifier,MOUSE_UP); 			break;					case bSURFACE_EDITOR:		case bTUMBLE_EDITOR:		case bLIGHT_EDITOR: 			if(OUT_POLY != InSelectedList(currentPositionR,currentModifier)) 				LaunchEditor();	 			break;#elif VR		case bSCALE_ROOM:		case bROTATE_ROOM:			RotateObject(currentPosition,currentModifier,MOUSE_UP);			break;					case MOVE_EYE:		case ROTATE_EYE:		case bARROW:			SelectObject(currentPosition,currentModifier,MOUSE_UP); 			break;		case bSHAPE:			break;#if 0	//MERGE-GOURAUD-PRO		case bZOOMIN:			if (modifiers&V_OPTION)				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);			else				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);			pcc(controller)->Request(NULL,msgUpdate,objTools,0);			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93			break;		case bZOOMOUT:			if (modifiers&V_OPTION)				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);			else				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);			pcc(controller)->Request(NULL,msgUpdate,objTools,0);			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93			break;#endif	//MERGE-GOURAUD-PRO		case bSURFACE_EDITOR:			if(OUT_POLY != InSelectedList(currentPositionR,currentModifier)) 				LaunchEditor();	 			break;#endif			#if  ((VR) || (VPRO))		// MERGE-GOURAUD-PRO#if VR		case bZOOMIN:		// MERGE-GOURAUD-PRO		{			if (editFlags & EDIT_CURSOR_MOVE)			{				ConstructObject(currentPosition,currentModifier,MOUSE_UP);			}			else			{				if (modifiers&V_OPTION)					pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);				else					pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);				pcc(controller)->Request(NULL,msgUpdate,objTools,0);				SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93			}		}		break;#endif		case bZOOMOUT:		// MERGE-GOURAUD-PRO			if (modifiers&V_OPTION)				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);			else				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);			pcc(controller)->Request(NULL,msgUpdate,objTools,0);			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93			break;#endif //  ((VR) || (VPRO))		default:			break;		}	}// } DAS-VR-VRTOOLS 8/22/93 turning off some, turning on others.	PointFFixed CadDraft::Constrain(Point *p,long modifiers)	{	PointFFixed	result;	Point	constPt,testPt;	FFixed	tmpAngle;	int		minDimension;		if((CONSTRAIN&modifiers) && (modeNone != editMode) && (modeSelect != editMode))			{		switch(editTool)			{			case bROTATE_ROOM:				angle.intg = FindAngle(currentPosition.h - anchorPosition.h,currentPosition.v - anchorPosition.v);				angle.intg+=(CONSTRAIN_DEGREE_INCREMENT>>1);				angle.intg/=CONSTRAIN_DEGREE_INCREMENT;				angle.intg*=CONSTRAIN_DEGREE_INCREMENT;				break;						case bSCALE_ROOM:				break;							default:				if( constrainNone == constrainMode)					{					currentPosition = anchorPosition;					constPt.h = p->h - anchorPosition.h;					constPt.v = p->v - anchorPosition.v;					testPt.h = abs(constPt.h);					testPt.v = abs(constPt.v);										minDimension = min(testPt.h,testPt.v);							if((minDimension > (abs(testPt.h - testPt.v)>>1)))						constrainMode = constrainAngle;					else 						{						if(testPt.h == testPt.v)							constrainMode = constrainNone; 						else							{							if(testPt.h > testPt.v)constrainMode = constrainHorz; 							else constrainMode = constrainVert; 							}						} 					}					else					{					constPt.h = p->h - anchorPosition.h;					constPt.v = p->v - anchorPosition.v;					minDimension = min(abs(constPt.h),abs(constPt.v));							}				if(constPt.h<0) constPt.h = -minDimension; else constPt.h = minDimension;				if(constPt.v<0) constPt.v = -minDimension; else constPt.v = minDimension;												switch(constrainMode)					{					case constrainNone: break;						case constrainHorz:  p->v = anchorPosition.v; break;					case constrainVert:  p->h = anchorPosition.h; break;					case constrainAngle: p->h = anchorPosition.h+constPt.h;  p->v = anchorPosition.v+constPt.v; break;					}				angle.intg = FindAngle(p->h - anchorPosition.h,p->v - anchorPosition.v);				break;			}		}	else		{		constrainMode = constrainNone;			if(modeNone == editMode)angle = FFZero;		else angle.intg = FindAngle(p->h - anchorPosition.h,p->v - anchorPosition.v);		}		result = pcc(controller)->Constrain(p,&angle);	SetPane();		return(result);			}	void CadDraft::SetZoom(double newZoom)	{	Draft::SetZoom(newZoom);	if(environment)environment->scale = scale2Local;	}void CadDraft::SetGrid(V_Array *hArray,V_Array *vArray) 	{ horzGrid = hArray; vertGrid = vArray; }void CadDraft::SetGuide(V_Array *hArray,RulerItem *hOI,V_Array *vArray,RulerItem *vOI) 	{ horzGuide = hArray; hLocalOrigin = hOI; vertGuide = vArray; vLocalOrigin = vOI;}void CadDraft::GridOn(int state) { displayFlags = state; }void CadDraft::SetTrackMethod(char method) { trackMethod = method; }void CadDraft::GridColor(RGBColor clr) { gridColor = clr; }void CadDraft::GuideColor(RGBColor clr) { guideColor = clr; }void CadDraft::DrawGuide(int where,int direction,int type) 	{	Point pFrom,pTo;		SetPane();	if(DrawInColor())		VForeColor(&vBlack);	else		VSetPattern(vPatBlack);			if(HORZ_RULER == direction)		{		pTo.h = pFrom.h = where;		pFrom.v = 0;		pTo.v = dataRect.bottom;		}	else		{		pTo.v = pFrom.v = where;		pFrom.h = 0;		pTo.h = dataRect.right;		}			switch(type)		{		case drawMove:		case drawStep:		case drawCancel:		case drawPush:			DrawMarquee(TRUE);			VMoveTo(pFrom.h,pFrom.v);			VLineTo(pTo.h,pTo.v);			break;		case drawStay:    			DrawMarquee(FALSE);			VMoveTo(pFrom.h,pFrom.v);			VLineTo(pTo.h,pTo.v);    			break;				}	UnsetPane();	}int CadDraft::CheckIntersect(long modifiers) 	{	PointLong	*lp,drawOrigin;	Point		l1,l2,r1,r2,pivot,place,start;	int			i,length,intersect;			if(bPOLY_ROOM != editTool) return(FALSE);		if((length = tempPoints->ALength() - 2) < 0) return(FALSE);		intersect = FALSE;	drawOrigin = environment->GetDrawOrigin();	lp = (PointLong *)tempPoints->Use();	l2.h = lp[length+1].h - drawOrigin.h;	l2.v = lp[length+1].v - drawOrigin.v;	start.h = lp[0].h - drawOrigin.h;	start.v = lp[0].v - drawOrigin.v;		if(!CursorMove(currentPosition,l2)) { tempPoints->Unuse(); return(INTERSECT); }	#if MACINTOSH  // jca 24FEB94	// on the Mac, the control key isn't used for anything much and we	// can use it for secret features.  Under Windows, we use it as an    // option key (so we can't do this).	if(modifiers&V_CONTROL)/* can make cancave piece */		{				for(i = 0; i < length; i++,lp++)			{			l1.h = lp->h - drawOrigin.h; 			l1.v = lp->v - drawOrigin.v;			r1.h = lp[1].h - drawOrigin.h;			r1.v = lp[1].v - drawOrigin.v;			if(INTERSECT == (intersect = Intersect(l2,currentPosition,l1,r1)))  				{ r2 = start; break; }			}		}	else#endif // MACINTOSH		{		l1.h = lp[length].h - drawOrigin.h; 		l1.v = lp[length].v - drawOrigin.v;		r1.h = lp[1].h - drawOrigin.h;		r1.v = lp[1].v - drawOrigin.v;		r2 = start;		if(PointConvex(l1,l2,r1,r2,currentPosition))intersect = FALSE; else intersect = INTERSECT;		}			if(INTERSECT == intersect)		{		anchorPosition = l2;		currentPosition = r2;		}			tempPoints->Unuse();		return(intersect);	}	int CadDraft::BuildPoly(long modifiers) 	{	PointLong	startPt,endPt,drawOrigin;	int	state,length;		drawOrigin = environment->GetDrawOrigin();	length = tempPoints->ALength();		if(doubleClick & modifiers)		{		if(3 > length) 			{ 			VPlaySound(beepSound); 			state = FALSE; 			} 		else 			{			tempPoints->Get(length-1,&endPt);			currentPosition = lastPosition;			anchorPosition.h = endPt.h - drawOrigin.h;			anchorPosition.v = endPt.v - drawOrigin.v;			state = TRUE;			}		}	else 		{			tempPoints->Get(0,&startPt);		tempPoints->Get(length-1,&endPt);		startPt.h -= drawOrigin.h;startPt.v -= drawOrigin.v;		endPt.h -= drawOrigin.h;endPt.v -= drawOrigin.v;		if((abs(currentPosition.h - startPt.h) < 5) && (abs(currentPosition.v - startPt.v) < 5) 				&& (currentPosition.h != endPt.h) && (currentPosition.v != endPt.v) 				&& 3 <= length)			{			currentPosition.h = startPt.h;			currentPosition.v = startPt.v;			state = TRUE;			}		else			state = FALSE;		}			return(state);	}int CadDraft::KeyAction(char c,long modifiers)	{			if((buttonDown & modifiers)) return(FALSE);	switch((unsigned char)c)		{			case 0xCA:			case V_SPACE:		 pcc(controller)->SetTool( modifiers, _TOGGLE );		 break;		case V_DELETE: 	return((EditBuffer(MSG_CLEAR,modifiers) < noErr) ? FALSE : TRUE); break;		case V_LEFTARROW: 		case V_RIGHTARROW:		case V_UPARROW: 		case V_DOWNARROW:			Nudge(c,modifiers);		// MERGE-GOURAUD-PRO-3			break;					default: return(FALSE); break;		}			return(TRUE);	}int CadDraft::GetAction(long action,long modifiers)	{	InputTextDialog		*inputDialog;	AppPreference	*appPreference;	DefaultPreference *defPref;	PrefDialog	*prefDialog;	V_Picture		*pictDisplay;	char		str[256];	RGBColor	col;	int 	state,numSides,result, lastPref;	int		err = noErr;						// jca 20 Oct 93	if(modeNone != editMode) return(FALSE);		switch(action)		{			case  MSG_CUT:		case  MSG_COPY:		case  MSG_DUPLICATE:		case  MSG_PASTE:		case  MSG_UNDO:  		case  MSG_CLEAR:			err = EditBuffer(action,modifiers);		// jca Oct 93 {			if (err < noErr)					VPlaySound(beepSound);			// if this failed, tell somebody			return((err < noErr) ? FALSE : TRUE); 			break;										// jca Oct 93 }		case  MSG_DESELECTALL: SelectAll(FALSE); break;		case  MSG_SELECTALL: SelectAll(TRUE); break;		case  MSG_MAGNIFY: controller->Request(NULL,objTools,bZOOM_UP,0); break;		case  MSG_MINIFY: controller->Request(NULL,objTools,bZOOM_BACK,0); break;		case  MSG_CENTERVIEW: MovePane(0,0,SCROLL_DRAW); break;		case  MSG_GROUP: Grouping(TRUE); break;		case  MSG_UNGROUP: Grouping(FALSE); break;		case  MSG_NEWLAYER: controller->Request(NULL,msgCreate,objList,0);break;		case  MSG_DELLAYER: controller->Request(NULL,msgDestroy,objList,0);break;					case  MSG_DEFAULTS:        {		RGBColor lastColor = ((CadControl*)(controller))->GetColor();	// PRO-13			appPreference = controller->GetPreference();			prefDialog = new(PrefDialog);			/* jca.  I think this is how it should work. */            lastPref = appPreference->lastItem;			result = prefDialog->cPrefDialog(controller, prefDefaults);			appPreference->lastItem = lastPref;			((CadControl*)(controller))->SetColor(lastColor);	// PRO-13 restore last color dammit		}			break;		case  MSG_TRANSPARENT: SetOpacity(TRANSPARENT_NOM); break;		case  MSG_TRANSLUCENT: SetOpacity(TRANSLUCENT_NOM); break;		case  MSG_OPAQUE: SetOpacity(OPAQUE_NOM); break;		case  MSG_FLAT_SHADED: SetShadeType(SHADE_FLAT); break;	// MERGE-GOURAUD		case  MSG_GOURAUD_SHADED: SetShadeType(SHADE_GOURAUD); break;	// MERGE-GOURAUD					case  MSG_PRINT:			#if !SAVE_DISABLED 	// ABD-SAVE-DISABLED			VOutput((V_Display*)theWindow->GetVPrint()); 			#endif // SAVE_DISABLED 	// ABD-SAVE-DISABLED		case  MSG_UNROTATE: UnPosition(bROTATE_ROOM); break;		case  MSG_UNSCALE: UnPosition(bSCALE_ROOM); break;		case  MSG_UNSKEW: UnPosition(bSKEW_TOOL); break;		case  MSG_COLOR: col = pcc(controller)->GetColor(); SetColor(col); break;		case  MSG_COLORPOP: 			col = pcc(controller)->GetColor();			sprintf(str,"%s",TXT_SELECT_OBJECT_COLOR);		// PRO-JAP			VColorWheel(str,&col);			SetColor(col); 			break;				case  MSG_SIDES:   			appPreference = controller->GetPreference();			defPref = (DefaultPreference*)appPreference->GetPreference(preferDefaults);			numSides = defPref->regularSides;			if(!(OPT_EDIT_MODE&modifiers))				{				sprintf(str,"%i",numSides);				inputDialog = new(InputTextDialog);				if(!inputDialog->cInputDialog(TXT_SIDES,TXT_SET_NUM_SIDES,str,inputNumber))break;	// PRO-JAP				sscanf(str,"%i",&numSides);				numSides = min(numSides,32);				numSides = max(numSides,3);				}			SetSides(numSides,TRUE);			break;					case  MSG_HIDEALL: SetEditState(EDIT_HIDDEN,modifiers,TRUE); break;		case  MSG_SHOWALL: SetEditState(EDIT_HIDDEN,modifiers,FALSE); break;		case  MSG_LOCKSEL: SetEditState(EDIT_LOCKED,modifiers,TRUE); break;		case  MSG_UNLOCKALL: SetEditState(EDIT_LOCKED,modifiers,FALSE); break;		case  MSG_E_WLIGHT: 			pcc(controller)->LaunchEditor(NULL,FFZero,NULL,Pt3DFFZero,toolCRTLLight);						break;					default: return(FALSE); break;		}			return(TRUE);	}		void CadDraft::SetBuildPoint(PointFFixed pt, Point p, int action)	{	PointFFixed	fp;	PointLong	sp;		if(TRUE == action)		{			sp.h = lOrigin.h + p.h;		sp.v = lOrigin.v + p.v;		tempPoints->Append(&sp);		tempFFPoints->Append(&pt);		}	else		{		tempPoints->SetLength(0);		tempFFPoints->SetLength(0);//		if(bZOOM_USER == editTool)		if ((bZOOM_USER == editTool) || (bZOOMIN == editTool))	// MERGE-GOURAUD-PRO			controller->Request(NULL,msgUpdate,objDraft,0);/* Not Okay */		}	}	void CadDraft::ConstructObject(Point p,long modifiers,short action)	{	Rect		r;	PointLong	lp,ap,drawOrigin;	Point	oldAnchor,oldLast;	double		newZoom;	int 		moveType,length;		switch(action)		{		case MOUSE_DOWN:			switch(editTool)				{				case bPOLY_ROOM:					if(modeTranslate == editMode)						{																			length = tempPoints->ALength()-1;						tempPoints->Get(length,&lp);						tempPoints->SetLength(length);						if(BuildPoly(modifiers))							{							tempFFPoints->SetLength(length);							CreateObject(p,modifiers);							SetTrackMode(POSITION_TRACK);							return;							}																		if(INTERSECT == CheckIntersect(modifiers)) 							{								tempFFPoints->SetLength(length);							return;							}						else							{														oldAnchor = anchorPosition;							oldLast = lastPosition;														drawOrigin = environment->GetDrawOrigin();								tempPoints->Get(length-1,&ap);							anchorPosition.h = ap.h - drawOrigin.h;							anchorPosition.v = ap.v - drawOrigin.v;							DisplayObject(drawCancel);							lastPosition.h = lp.h - drawOrigin.h;							lastPosition.v = lp.v - drawOrigin.v;							tempPoints->Append(&lp);							VSetPattern(vPatBlack);							SetPane();	// jca 24FEB94 set pane so we'll draw right							VMoveTo(anchorPosition.h,anchorPosition.v);							VLineTo(lastPosition.h,lastPosition.v);							UnsetPane();	// jca 24FEB94 set pane so we'll draw right							anchorPosition = oldAnchor;							lastPosition = oldLast;							}							}					else						lastPosition = currentPosition;									case bREGPOLY_ROOM:					case bRECT_ROOM:				case bZOOMIN:	// MERGE-GOURAUD-PRO				case bZOOM_USER:					SetTrackMode(POSITION_EDIT);					DisplayObject(drawStep);					editMode = modeTranslate;					break;								case bCUT_ROOM:					SetTrackMode(POSITION_EDIT);					DisplayObject(drawStep);					editMode = modeTranslate;					break;								case bMEASURE_TOOL:					SetTrackMode(POSITION_EDIT);					DisplayObject(drawStep);					editMode = modeTranslate;					break;				}			break;					case MOUSE_TRACK:			if( modeTranslate != editMode ) return;						if(editFlags&EDIT_CURSOR_MOVE)				{				CheckIntersect(modifiers);				moveType = drawMove; 				}			else 				moveType = drawStay;							switch(editTool)				{						case bMEASURE_TOOL:				case bRECT_ROOM:				case bZOOMIN:		// MERGE-GOURAUD-PRO				case bZOOM_USER:				case bPOLY_ROOM:				case bREGPOLY_ROOM:				case bCUT_ROOM:					DisplayObject(moveType);					break;				}			break;					case MOUSE_PUSH:			if( modeNone == editMode ) return;			DisplayObject(drawPush);			Push(currentPosition.h,currentPosition.v);			DisplayObject(drawPush);			break;		case MOUSE_UP:					if( bPOLY_ROOM == editTool ) return;			if( modeNone == editMode ) return;						if(editFlags&EDIT_CURSOR_MOVE)				{				switch(editTool)					{					case bZOOMIN:		// MERGE-GOURAUD-PRO					case bZOOM_USER:						DisplayObject(drawCancel);						MakeRect(&r,anchorPosition,lastPosition);						pcc(controller)->SetScale(ZoomRect(&r),TRUE);						controller->Request(NULL,msgUpdate,objTools,0);						break;					case bRECT_ROOM:						BuildRect();						CreateObject(p,modifiers);						break;					case bREGPOLY_ROOM:						BuildRegular();						CreateObject(p,modifiers);						break;					case bCUT_ROOM:						CreateObject(p,modifiers);						break;					case bMEASURE_TOOL:						DisplayObject(drawStep);						editMode = modeNone;						break;					}				}			else				DisplayObject(drawCancel);						SetTrackMode(POSITION_TRACK);			break;		}	}	void CadDraft::DrawMarker()	{	Rect rf,rt;	char ch;	CAVWalkController *cvw;	switch(editTool)		{		case bROTATE_ROOM:#if WINDOWS			ch = 3;			rt.left=anchorPosition.h-7;			rt.bottom=anchorPosition.v+8;#elif MACINTOSH			ch = ROTATE_ANCHOR;			rt.left=anchorPosition.h-7;			rt.bottom=anchorPosition.v-5;#endif			break;		case bSCALE_ROOM:#if WINDOWS			ch = 3;			rt.left=dropAnchor.h-7;			rt.bottom=dropAnchor.v+8;#elif MACINTOSH			ch =  ROTATE_ANCHOR;			rt.left=dropAnchor.h-7;			rt.bottom=dropAnchor.v-5;#endif			break;		default:#if WINDOWS			ch = 2;			rt.left=lastPosition.h-5;			rt.bottom=lastPosition.v+11;#elif MACINTOSH			ch = SELECT_CROSS;			rt.left=lastPosition.h-6;			rt.bottom=lastPosition.v-1;#endif			break;		}	rt.top=rt.bottom-vButtonFontSize;		rt.right=rt.left+vButtonFontSize;	rf.top=rf.left=0;	rf.bottom=rf.right=16;#if WINDOWS	/* if the currentscreen is defined, use that, otherwise, use this. DAS *//*	((CAVWalkController*)controller)->sIcon[ch]->MetaToMode(		currentscreen?(V_Display*)currentscreen:(V_Display*)currentPane,&rf,&rt,SRCINVERT); */	cvw= (CAVWalkController*)controller->controller;	cvw->sIcon[ch]->MetaToMode(this,&rf,&rt,SRCINVERT);#elif MACINTOSH	VTextMode(vSrcXor); 	TextSetUp(vButtonFont,vButtonFontSize,vNormal);		VDrawChar(ch,&rt);		VTextMode(vSrcOr);#endif	}	void CadDraft::RotateObject(Point p,long modifiers,short action)	{	PointFFixed	pt;	FFixed dummy;	int	moveType;		switch(action)		{		case MOUSE_DOWN:			if(!selectedList->ALength()) break;			selectedList->CopyArray(editList);			if(bSCALE_ROOM == editTool)				{				if(!(editFlags&EDIT_ANCHOR)) 					{					ffDropAnchor = ObjectCenter(&dummy);					dropAnchor = World2Local(ffDropAnchor,SCALE_ABSOLUTE);					}				tempFFPoints->Insert(0,&ffDropAnchor);				currentScale = BuildScale(currentPosition,anchorPosition,dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);				lastScale = currentScale;				}			SetTrackMode(POSITION_EDIT);			TranslateObject(currentPosition,modifiers,drawStep);			editMode = modeWait;			break;					case MOUSE_PUSH:			if( modeNone == editMode ) return;						TranslateObject(currentPosition,modifiers,drawPush);			Push(currentPosition.h,currentPosition.v);			TranslateObject(currentPosition,modifiers,drawPush);			break;		case MOUSE_TRACK:			if(modeNone == editMode)return;			if(editFlags&EDIT_CURSOR_MOVE)				moveType = drawMove; 			else 				moveType = drawStay;/*			if (editTool == bSCALE_ROOM)            	{				if (moveType == drawMove)					{					currentScale = BuildScale(currentPosition,anchorPosition,						dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);					editMode=modeTranslate;					}				}			else				editMode=modeTranslate;			anchorAngle = FFZero;			TranslateObject(currentPosition,modifiers,moveType);*/			switch(editMode)				{				case modeWait:					if(bROTATE_ROOM == editTool)						{						angle = lastAngle;						if((abs(currentPosition.h - anchorPosition.h) > ROTATE_RANGE) 						|| (abs(currentPosition.v - anchorPosition.v) > ROTATE_RANGE))							editMode = modeTranslate;						}					else      						{						if(drawMove == moveType)							editMode = modeTranslate;						else							{							if( downTime > 0)								break;							}									}										case modeTranslate:					if(!FFEqual(lastAngle,angle))moveType = drawMove; 					anchorAngle = FFZero;					if((bSCALE_ROOM == editTool) && (moveType == drawMove))						currentScale = BuildScale(currentPosition,anchorPosition,dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);					TranslateObject(currentPosition,modifiers,moveType);					break;				}       // */			break;					case MOUSE_UP:			switch(editMode)				{				case modeNone:					TranslateObject(currentPosition,modifiers,drawCancel);						SetTrackMode(POSITION_TRACK);					break;									case modeWait:					if(OPT_EDIT_MODE&modifiers && bSCALE_ROOM == editTool )						{						DrawMarker();						editFlags = EDIT_ANCHOR;						tempFFPoints->Get(1,&ffDropAnchor);						dropAnchor = World2Local(ffDropAnchor,SCALE_ABSOLUTE);						currentPosition = currentPositionR;						DrawMarker();						}					TranslateObject(currentPosition,modifiers,drawCancel);						SetTrackMode(POSITION_TRACK);					break;									default:					TranslateObject(currentPosition,modifiers,drawCancel);						SetTrackMode(POSITION_TRACK);					break;				}			break;		}	}	voidCadDraft::SelectObject(Point p,long modifiers,short action)	{		Rect	r;		int moveType,found;		switch(action)		{		case MOUSE_DOWN:			if(POLY_ERROR == InSelectedList(currentPositionR,modifiers)) editMode = modeNone;			else editMode = modeWait;			lastPosition = currentPosition;			break;					case MOUSE_TRACK:			if(editFlags&EDIT_CURSOR_MOVE)moveType = drawMove;			else moveType = drawStay;						switch(editMode)				{				case modeWait: 					if(drawStay == moveType &&  downTime > 0)						break;												downTime = -1;										moveType = drawStep;					SetTrackMode(POSITION_EDIT);										if(editAction || editList->ALength()) 						{ 						editMode = modeTranslate; 						TranslateObject(currentPosition,modifiers,moveType); 						}					else 						{ 						editMode = modeSelect; 						DisplayObject(moveType); 						}					break;									case modeTranslate: 					TranslateObject(currentPosition,modifiers,moveType); 					break;				case modeSelect: 					DisplayObject(moveType);					break;				}						break;				case MOUSE_PUSH:			switch(editMode)				{				case modeSelect:					DisplayObject(drawPush);					Push(currentPosition.h,currentPosition.v);					DisplayObject(drawPush);					break;									case modeTranslate:					TranslateObject(currentPosition,modifiers,drawPush);					Push(currentPosition.h,currentPosition.v);					TranslateObject(currentPosition,modifiers,drawPush);					break;				}			break;					case MOUSE_UP:			switch(editMode)				{				case modeSelect:					DisplayObject(drawCancel);					SetTrackMode(POSITION_TRACK);#if VWT					if( (bARROW == editTool) || (bLOCK == editTool) || (bHIDE == editTool))#elif VR					if(bARROW == editTool)#endif						{						if(editFlags&EDIT_CURSOR_MOVE)							{							MakeRect(&r,anchorPosition,currentPosition);							SelectRect(&r,modifiers);							}						}					break;								case modeTranslate:					TranslateObject(currentPosition,modifiers,drawCancel);										break;				case modeWait:					editMode = modeNone;					if(OPT_EDIT_MODE&modifiers)						{						if(editFlags&EDIT_ANCHOR)DrawMarker();						editFlags |= EDIT_ANCHOR;						currentPosition = dropAnchor = currentPositionR;						DrawMarker();						}					break;				}			break;		}	}	void CadDraft::KeyInput()	{	SetPane();	switch(editTool)		{		case bRECT_ROOM:			if(tempPoints->ALength()) ConstructObject(currentPosition,0L,MOUSE_UP);			else ConstructObject(currentPosition,0L,MOUSE_DOWN);			break;							case bPOLY_ROOM:			ConstructObject(currentPosition,0L,MOUSE_DOWN);			break;		}	UnsetPane();	}void CadDraft::DisplayObject(short state) 	{	PointLong	lp,drawOrigin;	Rect		r;	int			lasPos;		SetPane(); // DAS-FIXPUSH 9/11/93	if (environment) environment->SetPatternOrigin();	switch(editTool)		{		case bSKEW_TOOL:		case bHIDE:		case bLOCK:		case bARROW:		case bZOOMIN:		// MERGE-GOURAUD-PRO		case bZOOM_USER:		case bRECT_ROOM:			switch(state)				{				case drawMove:					#if WINDOWS					//On Windows, Dotted lines and solid lines draw on slightly different                    //pixels, so this hack is necessary to avoid pixel dribble					if(MarqueeIsOdd())					{						DrawMarquee(FALSE);						DrawRect(anchorPosition,lastPosition);											}                    #endif					DrawMarquee(TRUE);					DrawRect(anchorPosition,lastPosition);											lastPosition = currentPosition;										case drawStep:				case drawCancel:				case drawPush:					DrawMarquee(TRUE);					DrawRect(anchorPosition,lastPosition);					break;									case drawStay:					DrawMarquee(FALSE);					DrawRect(anchorPosition,lastPosition);					break;				}			break;					case bMEASURE_TOOL:		case bCUT_ROOM:		case bPOLY_ROOM:			switch(state)				{				case drawStay:					DrawMarquee(FALSE);					VMoveTo(anchorPosition.h,anchorPosition.v);					VLineTo(lastPosition.h,lastPosition.v);					break;				case drawMove:					#if WINDOWS					//On Windows, Dotted lines and solid lines draw on slightly different                    //pixels, so this hack is necessary to avoid pixel dribble					if(MarqueeIsOdd())					{						DrawMarquee(FALSE);						VMoveTo(anchorPosition.h,anchorPosition.v);						VLineTo(lastPosition.h,lastPosition.v);					}                    #endif					DrawMarquee(TRUE);					VMoveTo(anchorPosition.h,anchorPosition.v);					VLineTo(lastPosition.h,lastPosition.v);					lastPosition = currentPosition;															case drawPush:				case drawCancel:				case drawStep:					DrawMarquee(TRUE);					VMoveTo(anchorPosition.h,anchorPosition.v);					VLineTo(lastPosition.h,lastPosition.v);					break;				}							break;					case bREGPOLY_ROOM:			switch(state)				{				case drawMove:					#if WINDOWS					//On Windows, Dotted lines and solid lines draw on slightly different                    //pixels, so this hack is necessary to avoid pixel dribble					if(MarqueeIsOdd())					{						DrawMarquee(FALSE);						DrawRegPoly();					}                    #endif					DrawMarquee(TRUE);					DrawRegPoly();											lastPosition = currentPosition;					lastAngle = angle;					DrawMarquee(TRUE);					DrawRegPoly();					break;									case drawStay:					DrawMarquee(FALSE);					DrawRegPoly();					break;								case drawStep:					DrawMarquee(TRUE);					DrawRegPoly();					break;									case drawPush:					DrawMarquee(TRUE);					DrawRegPoly();					break;				case drawCancel:					DrawMarquee(TRUE);					DrawRegPoly();					break;				}			break;		}	UnsetPane(); // DAS-FIXPUSH 9/11/93	}void CadDraft::TranslateObject(Point p,long  modifiers,short action) 	{	short	minMode;		SetPane();	// DAS-FIXPUSH 9/11/93	switch(action)		{		case drawStay:        	/*this is a one step marching ants function*/			if(((CONSTRAIN|OPT_EDIT_MODE)&lastModifier) == ((CONSTRAIN|OPT_EDIT_MODE)&modifiers))				{				DrawMarquee(FALSE);				DoTranslate(lastModifier);				lastModifier = modifiers;				lastScale = currentScale;				lastPosition = p;				break;				}						case drawMove:        	/*this is when the marching ants are moved*/			SearchPeers(p,modifiers,action);			/*erase the old one*/			#if WINDOWS			//On Windows, Dotted lines and solid lines draw on slightly different            //pixels, so this hack is necessary to avoid pixel dribble			if(MarqueeIsOdd())			{				DrawMarquee(FALSE);				DoTranslate(lastModifier);			}            #endif			DrawMarker();			DrawMarquee(TRUE);			DoTranslate(lastModifier);			lastAngle = angle;			lastScale = currentScale;			lastPosition = p;				lastModifier = modifiers;            /*draw the new one*/			DrawMarker();			DrawMarquee(TRUE);			DoTranslate(lastModifier);						break;					case drawStep:        	/*this is the initialization of the marching ants*/			SearchPeers(currentPosition,modifiers,action);			DrawMarker();									DrawMarquee(TRUE);			DoTranslate(modifiers);			lastModifier = modifiers;			lastScale = currentScale;// DAS-VWT&&VR-BUGFIX 9/11/93 if it is the initialization then don't move the damn point//			lastAngle = angle;//			lastPosition = p;				break;					case drawPush:			DrawMarker();									DrawMarquee(TRUE);			DoTranslate(modifiers);			lastModifier = modifiers;			lastScale = currentScale;			lastAngle = angle;			lastPosition = p;				break;		case drawCancel:			SearchPeers(p,modifiers,action);			switch(editTool)				{				case bROTATE_ROOM:	minMode =  modeNone; break;				case bSCALE_ROOM:	minMode =  modeNone; break;				default: minMode = modeWait; break;				}							if(minMode < editMode)				{				DrawMarker();				DrawMarquee(TRUE);				if(DoTranslate(lastModifier) && editMode>modeWait)					UpdateObject(modifiers);				}			SetTrackMode(POSITION_TRACK);			break;		}	UnsetPane();// DAS-FIXPUSH 9/11/93	}void CadDraft::SetTrackSet(int mode)	{		TrackSet	trackSet;		if(POSITION_TRACK == mode)		{		type = controller->GetType();		if( toolCRTLDesign == controller->GetType())			{			trackSet.length = 4;			if(TRACK_WORLD == trackMethod)				{				switch(environment->GetAxis())					{					case INFL_X: 						trackSet.item1 = trackYPos; 						trackSet.item2 = trackZPos; 						break;					case INFL_Y: 						trackSet.item1 = trackXPos; 						trackSet.item2 = trackZPos; 						break;					case INFL_Z: 						trackSet.item1 = trackXPos; 						trackSet.item2 = trackYPos; 						break;					}						}			else				{				trackSet.item1 = trackHPos;				trackSet.item2 = trackVPos;				}			trackSet.item3 = trackFloor;			trackSet.item4 = trackDepth;			}		else			{			trackSet.length = 2;			if(TRACK_WORLD == trackMethod)				{				trackSet.item1 = trackXPos;				trackSet.item2 = trackYPos;				}			else				{				trackSet.item1 = trackHPos;				trackSet.item2 = trackVPos;				}			}		}	else		{		switch(editTool)			{							case bHAND:  				if(TRACK_WORLD == trackMethod)					{					trackSet.length = 6;					trackSet.item1 = trackXPos;					trackSet.item2 = trackYPos;					trackSet.item3 = trackZPos;					trackSet.item4 = trackDXPos;					trackSet.item5 = trackDYPos;					trackSet.item6 = trackDZPos;					}				else					{					trackSet.length = 4;					trackSet.item1 = trackHPos;					trackSet.item2 = trackVPos;					trackSet.item3 = trackDHPos;					trackSet.item4 = trackDVPos;					}				break;									case bARROW:			case bMEASURE_TOOL:			case bPLUS_MINUS:			case bSKEW_TOOL:			case bZOOMIN:		// MERGE-GOURAUD-PRO			case bZOOM_USER:			case bRECT_ROOM:			case bPOLY_ROOM:			case bREGPOLY_ROOM: 				trackSet.length = 6;				if(TRACK_WORLD == trackMethod)					{					switch(environment->GetAxis())						{						case INFL_X: 							trackSet.item1 = trackYPos; 							trackSet.item2 = trackZPos;							trackSet.item3 = trackDYPos; 							trackSet.item4 = trackDZPos;							break;						case INFL_Y: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackZPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDZPos;							break;						case INFL_Z: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackYPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDYPos;							break;						}					}				else					{					trackSet.item1 = trackHPos;					trackSet.item2 = trackVPos;					trackSet.item3 = trackDHPos;					trackSet.item4 = trackDVPos;					}				trackSet.item5 = trackLength;				trackSet.item6 = trackAngle;				break;							case bCUT_ROOM: 				trackSet.length = 5;				if(TRACK_WORLD == trackMethod)					{					switch(environment->GetAxis())						{						case INFL_X: 							trackSet.item1 = trackYPos; 							trackSet.item2 = trackZPos; 							trackSet.item3 = trackDYPos; 							trackSet.item4 = trackDZPos; 							break;						case INFL_Y: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackZPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDZPos; 							break;						case INFL_Z: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackYPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDYPos; 						}							}				else					{					trackSet.item1 = trackHPos;					trackSet.item2 = trackVPos;					trackSet.item3 = trackDHPos;					trackSet.item4 = trackDVPos;					}									trackSet.item5 = trackAngle;				break;							case bSCALE_ROOM:				trackSet.length = 6;				if(TRACK_WORLD == trackMethod)					{					switch(environment->GetAxis())						{						case INFL_X: 							trackSet.item1 = trackYPos; 							trackSet.item2 = trackZPos; 							trackSet.item3 = trackDYPos; 							trackSet.item4 = trackDZPos; 							trackSet.item5 = trackYScale;							trackSet.item6 = trackZScale;												break;						case INFL_Y: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackZPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDZPos; 							trackSet.item5 = trackXScale;							trackSet.item6 = trackZScale;												break;						case INFL_Z: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackYPos; 							trackSet.item3 = trackDXPos; 							trackSet.item4 = trackDYPos; 							trackSet.item5 = trackXScale;							trackSet.item6 = trackYScale;											}							}				else					{					trackSet.item1 = trackHPos;					trackSet.item2 = trackVPos;					trackSet.item3 = trackDHPos;					trackSet.item4 = trackDVPos;					trackSet.item5 = trackHScale;					trackSet.item6 = trackVScale;										}								break;							case bROTATE_ROOM: 				trackSet.length = 3;				if(TRACK_WORLD == trackMethod)					{					switch(environment->GetAxis())						{						case INFL_X: 							trackSet.item1 = trackYPos; 							trackSet.item2 = trackZPos; 							break;						case INFL_Y: 							trackSet.item1 = trackXPos; 							trackSet.item2 = trackZPos; 							break;						case INFL_Z: 							trackSet.item1 = trackXPos;							trackSet.item2 = trackYPos;							break;										}							}				else					{					trackSet.item1 = trackHPos;					trackSet.item2 = trackVPos;					}								trackSet.item3 = trackAngle;				break;							default:				trackSet.length = 2;				trackSet.item1 = trackHPos;				trackSet.item2 = trackVPos;				break;			}		}			pcc(controller)->SetTrackSet(&trackSet);		//	SetPane(); // what the hell is this doing here? DAS 9/9/93	}	void CadDraft::SetTrackMode(int mode)	{		PointFFixed pt;	switch(mode)		{		case POSITION_TRACK:			tempPoints->SetLength(0);			tempFFPoints->SetLength(0);			editMode = modeNone;			editList->SetLength(0);			lastAngle = FFZero;				lastModifier = 0L;						break;				case POSITION_EDIT:/*			worldAnchor = environment->MakeVector(TO_WORLD,Local2World(anchorPosition,SCALE_ABSOLUTE));*/			if(bSCALE_ROOM == editTool)				{				tempFFPoints->Get(1,&pt);				worldScaleMult = environment->MakeVector(TO_WORLD,pt);				}			tempFFPoints->Get(0,&pt);			worldAnchor = environment->MakeVector(TO_WORLD,pt);			if(bPOLY_ROOM != editTool)				lastPosition = anchorPosition;			switch(editTool)				{				case bROTATE_ROOM:	anchorAngle = lastAngle = angle = FFZero; break;				default: anchorAngle = lastAngle = angle; break;				}						break;		}	SetTrackSet(mode);	}	void	CadDraft::MakeWorldRect(Rect *r,int top,int left,int bottom,int right)	{	Point p;	PointFFixed	result;		p.h = left; p.v = top;	result = Local2World(p,SCALE_ABSOLUTE);	r->top = FFRound(result.v);	r->left = FFRound(result.h);		p.h = right; p.v = bottom;	result = Local2World(p,SCALE_ABSOLUTE);	r->bottom = FFRound(result.v);	r->right = FFRound(result.h);	}void CadDraft::BuildRect()	{	PointFFixed	pt0,pt1,pt2,pt3;		tempFFPoints->Get(0,&pt0);	tempFFPoints->Get(1,&pt2);	pt1.h = pt0.h;	pt1.v = pt2.v;	pt3.h = pt2.h;	pt3.v = pt0.v;		tempFFPoints->SetLength(4);	tempFFPoints->Put(0,&pt0);	tempFFPoints->Put(1,&pt1);	tempFFPoints->Put(2,&pt2);	tempFFPoints->Put(3,&pt3);		}					void CadDraft::BuildRegular()	{	PointFFixed	end,center,pt;	double 	radius,dh,dv;	int 	i,nSides;	double	dangle,angl;	tempFFPoints->Get(0,&center);	tempFFPoints->Get(1,&end);		nSides = pcc(controller)->GetNumSides();	/*	angl = FixedToDbl(ConvertAngle(lastAngle));*/	dh = FixedToDbl(FFSub(end.h,center.h));	dv = FixedToDbl(FFSub(end.v,center.v));    if(dh==0 && dv==0)angl=0;	else angl = atan2(dv,dh);	dangle = PI2/nSides;				radius = sqrt(dh*dh+dv*dv);		tempFFPoints->SetLength(0);	for(i=0;i<nSides;i++)		{		pt.h=DblToFixed(radius*cos(angl));		pt.v=DblToFixed(radius*sin(angl));		pt.h=FFAdd(center.h,pt.h);		pt.v=FFAdd(center.v,pt.v);		tempFFPoints->Append(&pt);		angl+=dangle;		}		}					void CadDraft::DrawRegPoly() 	{	V_Array *pp;	Point	*p,tp;	long	xx,yy;	int i,length,rad;				tp.h = anchorPosition.h - lastPosition.h;	tp.v = anchorPosition.v - lastPosition.v;	xx = (long)tp.h * tp.h;	yy = (long)tp.v * tp.v;	rad = LSqrt(xx + yy); 	pp = RegularPoly(pcc(controller)->GetNumSides(),anchorPosition,rad,FFRound(lastAngle));	length = pp->ALength();	p = (Point*)pp->Use();	VMoveTo(p[length-1].h,p[length-1].v);	for(i = 0; i < length; i++,p++)		VLineTo(p->h,p->v);		pp->Unuse();	pp->dArray();	}void CadDraft::SetLastPoint(int flag)	{	if(flag)		{		lastPosition.h = centerX;		lastPosition.v = centerY;		}	}int  CadDraft::IO(V_Buffer *buffer)	{	int		err;		err = FALSE;	if(err = buffer->IOType(&displayFlags,IO_CHAR)) return(err);	if(err = buffer->IOData(&gridColor,(long)sizeof(RGBColor))) return(err);	err = Draft::IO(buffer);	return(err);	}			intCadDraft::TakeSnapShot(V_Buffer *buffer,int snapShotFormat)	{	AppPreference *appPref;	TranslatorPreference	*transPref;	Rect	r;	Point p;	V_Picture *pict;	BMPWriter	*bmp;#if VWT && !SPECIAL_EDITION			// merge SE, vrmadness		// GJR 7/4/95/* jca 17 Sept 93.  Not in VR { */	EPSBase *epsf;	TIFFWriter *tiff;#endif // VWT.  jva 17 Sept 93 }    V_Offscreen *imageScreen;	int	err;		err = 0;	appPref = controller->GetPreference();	transPref = (TranslatorPreference*)appPref->GetPreference(preferTranslator);		if(transPref->screenSize==screenCustom)		r = transPref->outputRect;	else 		{		ScreenSize(transPref->screenSize,&p,theWindow);		r.left = r.top = 0;		r.right = p.h;		r.bottom = p.v;		}		switch(snapShotFormat)		{		case formatPICT:			pict=new(V_Picture);			pict->cPicture(transPref->bitmapFlag);			pict->SetDepth(transPref->outputColorDepth);			pict->PutRect(&r);			VOutput(pict);										pict->IOPictFile(buffer);			pict->dPicture();			break;					case formatBMP:			bmp = new(BMPWriter);            imageScreen = new(V_Offscreen);			imageScreen->cOffscreen(&r, 8, NULL,NULL);			imageScreen->SetDisplayType(DISPLAY_PICT);// DAS-VWINDOWS 10/9/93			bmp->cBMPWriter(buffer, imageScreen);			bmp->DrawImage(this);			bmp->WriteImage(transPref);						bmp->dBMPWriter();			imageScreen->dOffscreen();			break;#if VWT && !SPECIAL_EDITION         	// merge SE, vrmadness		// GJR 7/4/95/* jca 17 Sept 93.  Not in VR { */		case formatTIFF:			tiff = new(TIFFWriter);			imageScreen = new(V_Offscreen);			imageScreen->cOffscreen(&r, 8, NULL,NULL);			imageScreen->SetDisplayType(DISPLAY_PICT);					tiff->cTIFFWriter(buffer, imageScreen);						tiff->DrawImage(this);			tiff->WriteImage(transPref);						tiff->dTIFFWriter();			imageScreen->dOffscreen();			break;		case formatEPS:		case formatIllustrator:			switch(snapShotFormat)		    	{		    	case formatEPS:		    		epsf=new(EPSF);					epsf->cEPSBase(buffer);		    		break;				case formatIllustrator:		    	default:		    		epsf=new(EPSF_Adobe1_1);					epsf->cEPSBase(buffer);		    		break;				}			// some day we may need to turn off texturing here.  jca			// see walkpane.cp			epsf->SetDepth(transPref->EPSColorFlag ? depth : 0);			if (transPref->EPSFDevice==EPSForThePC)	/* the machine code is stored here */				epsf->SetPCFlags();			else /*if (transPref->EPSFDevice==EPSForTheMac)*/				epsf->SetMacFlags();			if (transPref->EPSPreviewFlag == TRUE)				epsf->SetPreviewFlag(TRUE);			epsf->PutRect(&r);			epsf->MakeHeader();			err = VOutput(epsf);									if(!err)epsf->MakeFooter();									if((!err) && (transPref->EPSPreviewFlag == TRUE))				{				switch (transPref->EPSFDevice)	/* stores the machine type */					{					case EPSForTheMac:						((V_File *)buffer)->OpenResource(FALSE);						pict=new(V_Picture);						pict->cPicture(FALSE);						pict->PutRect(&r);						pict->SetDepth(transPref->EPSColorFlag ? depth : 0);						err = VOutput(pict);						if(!err)err = pict->IOResource((V_File*)buffer,256,NULL);						pict->dPicture();						((V_File *)buffer)->CloseResource();						break;					case EPSForThePC:						tiff = new(TIFFWriter);						imageScreen = new(V_Offscreen);						imageScreen->cOffscreen(&r, 8, NULL,NULL);						imageScreen->SetDisplayType(PICT_DRAW);									tiff->cTIFFWriter(buffer, imageScreen);						tiff->WriteIntel();												tiff->DrawImage(this);						tiff->WriteImage(transPref);															tiff->dTIFFWriter();						imageScreen->dOffscreen();                  	  	break;					}                }			if (!err) epsf->UpdateHeader();			epsf->dEPSBase();			break;#endif // VWT.  jca 17 Sept 93 }		}		return(err);	}	int  CadDraft::EditBuffer(long action,long modifiers){return(noErr);   // jca 25MAR94 not TRUE/FALSE, but 0 if no errors}// MERGE-GOURAUD-PRO-3 [[[void CadDraft::Nudge(char direction,long modifiers) 		// ABD{}	#if 0void CadDraft::Nudge(char direction,long modifiers) 	{	Point	oldLastPt,oldAnchorPt,oldRealPt;	int		oldEditTool,oldEditMode;		oldRealPt = currentPositionR;	oldAnchorPt = anchorPosition;	oldLastPt = lastPosition;	oldEditTool = editTool;	oldEditMode = editMode;		currentPositionR.h = centerX;	currentPositionR.v = centerY;		lastPosition = anchorPosition = currentPositionR;		selectedList->CopyArray(editList);		switch(direction)		{		case V_LEFTARROW: 	lastPosition.h--; break;		case V_RIGHTARROW: 	lastPosition.h++; break;		case V_UPARROW: 	lastPosition.v--; break;		case V_DOWNARROW: 	lastPosition.v++; break;		}#if VR  //	editTool = bARROWTOOL;#elif VWT	editTool = bARROW;#endif	editMode = modeTranslate; 		UpdateObject(modifiers);		editList->SetLength(0);	editMode = oldEditMode; 	editTool = oldEditTool;	currentPositionR = oldRealPt;	anchorPosition = oldAnchorPt;	lastPosition = oldLastPt;	}#endif	// MERGE-GOURAUD-PRO-3 ]]]// jca 23MAR94 is there anything in the selectedList?  if so, return// TRUE.  This is so the Edit menu can have things greyed out when there's// nothing to copy, paste, or duplicate.intCadDraft::IsAnythingSelected(void){	if (selectedList)		{		return((selectedList->ALength() > 0)? TRUE : FALSE);		}	else		return(0);}// jca 24MAR94  SelectedConditions checks the condition of the selected// items.  We want to know (for the menus) if any selected item is// {opaque, translucent, transparent}, {straight, rounded, pointed},// extruded, {single,double extrusion}, regular polyhedron, rotated,// scaled, or skewed.  If a thing is true, set a bit flagULongCadDraft::SelectedConditions(void){	ULong conditions = 0L;	if (IsAnythingSelected())		{		CAVPolyhedron **cavPolyList;        UShort opacity;        int i, extrusion;		cavPolyList = (CAVPolyhedron **)selectedList->Use();		for (i = 0; i < selectedList->ALength(); i++)			{			opacity = cavPolyList[i]->GetOpacity();			extrusion = cavPolyList[i]->GetExtrusionType();			if (cavPolyList[i]->IsPolySkewed())			conditions |= SELECTED_SKEWED;			if (cavPolyList[i]->IsPolyScaled())			conditions |= SELECTED_SCALED;			if (cavPolyList[i]->IsPolyRotated())		conditions |= SELECTED_ROTATED;			if (cavPolyList[i]->CanLevelsBeChanged())	conditions |= SELECTED_LEVELS;			if (cavPolyList[i]->CanSidesBeChanged())	conditions |= SELECTED_SIDES;			if (cavPolyList[i]->IsPolyStraight())	conditions |= SELECTED_STRAIGHT;			if (cavPolyList[i]->IsPolyPointed())	conditions |= SELECTED_POINTED;			if (cavPolyList[i]->IsPolyRounded())	conditions |= SELECTED_ROUNDED;			if (IS_OPAQUE(opacity)) 				conditions |= SELECTED_OPAQUE;			else if (IS_TRANSLUCENT(opacity))  	conditions |= SELECTED_TRANSLUCENT;			else /* if (IS_TRANSPARENT(opacity))*/	conditions |= SELECTED_TRANSPARENT;			if (extrusion == 1)					conditions |= SELECTED_SINGLE;			else if (extrusion == 2) 			conditions |= SELECTED_DOUBLE;			if (cavPolyList[i]->IsPolyGrouped())	conditions |= SELECTED_GROUP;			}		if (selectedList->ALength() > 1)	conditions |= SELECTED_CAN_GROUP;		selectedList->Unuse();		}	return(conditions);}/*=========================================================================*-------------------------------------------------------------------------*/void CadDraft::ChangeColor(RGBColor *color){}void CadDraft::ChangeTexture(struct TextureItem *tex_item){}  	/* ABD WILLIAMS MERGE-TEXTURE 9/13/93 */void CadDraft::SetTexture(struct TextureItem *tex_item) {}	/* ABD WILLIAMS MERGE-TEXTURE 9/13/93 */void CadDraft::SetShadeType(unsigned char sh) {}			/* ABD MERGE-GOURAUD */int  CadDraft::Select(void *ply,V_Array *list,long modifiers) { return(0); }int  CadDraft::ReSelect(Point p,long modifiers)  { lastPosition = p; return OUT_POLY;}int  CadDraft::InSelectedList(Point p,long modifiers)  { lastPosition = p; return OUT_POLY; }void CadDraft::EditPoint(Point p,long modifiers) {}void CadDraft::CreateObject(Point p,long modifiers)  { }int CadDraft::DoTranslate(long modifiers) { return(TRUE);}	void CadDraft::UpdateObject(long modifiers) {}void CadDraft::Grouping(int state) {}void CadDraft::SelectRect(Rect *r,long modifiers) {}void CadDraft::SearchPeers(Point p,long modifiers,int type) {}void CadDraft::SetColor(RGBColor color) {}void CadDraft::SelectAll(int state)  { }void CadDraft::SetPosition(int who,double	where) { }void CadDraft::SetOpacity(int opc) {}void CadDraft::SetSides(int numSides,int editType) {}void CadDraft::Hand(Point p, long modifiers, int eventType) { DoHand(p); }void CadDraft::LaunchEditor() { SetTrackMode(POSITION_TRACK); }int  CadDraft::IO_OBJECT(V_Buffer *buffer) { return(noErr); }void CadDraft::UnPosition(int type) {}void CadDraft::SetEditState(int type,long modifiers,int dir) {}int CadDraft::EditLayer(LayerItem *lyr,int type) { return(FALSE); }PointFFixed CadDraft::ObjectCenter(FFixed *dpth) 	{ 	PointFFixed pt;	Point p;	p.h = centerX;p.v = centerY;	pt = Local2World(p,SCALE_ABSOLUTE);	*dpth = FFZero;	return(pt);	}voidMenuCad::ctheMenu()	{	/* DUDE THIS IS HOW IT SHOOULD BE DONE !!! *//* DUDE cMenu(TXT_EMPTYSTRING);*/	Append(TXTM_AUTOGRIDST);	Append(TXTM_MAGNIFY);		Append(TXTM_MINIFY);		SetPriority(averagePriority);	SetKey(menuMagnify,menuMagnifyKey);	SetKey(menuMinify,menuMinifyKey);	#if GERMAN	  SetKeyPos(menuMinify,menuMinifyKeyPos);	#elif SPANISH   	  SetKeyPos(menuMagnify,menuMagnifyKeyPos);	  SetKeyPos(menuMinify,menuMinifyKeyPos);	#else // English default	  SetKeyPos(menuMagnify,menuMagnifyKeyPos);	  SetKeyPos(menuMinify,menuMinifyKeyPos);	#endif // GERMAN	SetEuroKey(menuSnapToGrid, menuSnapToGridEuroKey);	SetEuroKey(menuMagnify, menuMagnifyEuroKey);	SetEuroKey(menuMinify, menuMinifyEuroKey);	}voidMenuCad::SetController(Controller *ctrl)	{	controller = ctrl;	}voidMenuCad::Preempt()	{	AppPreference	*prefs;	EditorPreference	*editPrefs;	int state;		prefs = controller->GetPreference();	editPrefs = (EditorPreference*)prefs->GetPreference(preferEditor);	state = RULER_SNAP&editPrefs->editorState ? TRUE : FALSE;	Select(menuSnapToGrid,state);	}	voidMenuCad::Action(int num, long modifier)	{	AppPreference	*prefs;	EditorPreference	*editPrefs;	int state;		switch (num)		{		case menuSnapToGrid:			prefs = controller->GetPreference();			editPrefs = (EditorPreference*)prefs->GetPreference(preferEditor);			state = RULER_SNAP&editPrefs->editorState ? FALSE : TRUE;			if(state)editPrefs->editorState|=RULER_SNAP; 			else editPrefs->editorState&=~RULER_SNAP;			editPrefs->SetChange(TRUE);			controller->Request(NULL,msgEdit,objPreference,0);			editPrefs->SetChange(FALSE);			break;		case menuMagnify: if(!(modifier&V_SHIFT)) { controller->Request(NULL,objTools,bZOOM_UP,0); break; }		case menuMinify: controller->Request(NULL,objTools,bZOOM_BACK,0); break;		}	}#if VWT// { DAS-VR-VRTOOLS 8/15/93 we won't be needing this for VR.void EmptyPane::SetController(Controller *ctrl) 	{	controller = ctrl;	}	void EmptyPane::CalcSize(Rect *r,Point *p,int type,int warning)	{	controller->GetPlace(r,warning,toolPEmpty);	}	void EmptyPane::Display(int type, int x, int y) 	{	Rect r;	r= dataRect;	VEraseRect(&r);	}// } DAS-VR-VRTOOLS 8/15/93 we won't be needing this for VR.#endif#if VPROvoid BlankPane::SetController(Controller *ctrl) 	{	controller = ctrl;	}	void BlankPane::CalcSize(Rect *r,Point *p,int type,int warning){	// do nothing -- return r unchanged}	void BlankPane::Display(int type, int x, int y) {	Rect r;	r= dataRect;	VEraseRect(&r);}   #endif //VPRO
+/*------------------------------------------------------------------------------
+ * Virtus WalkThrough_
+ * Version 1.1.1
+ *
+ * Copyright _ 1990-1992 by Virtus Corporation
+ * All Rights Reserved
+ * Written by  
+ *				
+ *				Mark J. Uland
+ * Virtus Corporation
+ * Suite 204
+ * 117 Edinburgh South
+ * Cary, North Carolina    27511
+ * (919) 467-9700
+ *------------------------------------------------------------------------------
+ * Source File: 
+ * Notes: 
+ * History: 
+ * Platform: 	MACINTOSH 	X
+ *				WINDOWS		X
+ *------------------------------------------------------------------------------
+ */
+
+#include "VTypes.h"
+#include "CadDraft.h"
+#include "RuleItem.h"
+#include "CadCntrl.h"
+#include "CVEnvirn.h"
+#include "CVDefs.h"
+#include "PolyDefs.h"
+#include "Misc.h"
+#include "Geometry.h"
+#include "CadPosn.h"
+#include "CVPolyh.h"
+#include "AppMssgs.h"
+#include "AppText.h"
+#include "AppDeflt.h"
+#include "Button.h"
+#include "ToolDef.h"
+#include "Ruler.h"
+#include "WMenus.h"/* THIS IS FOR PRIORITY enum */
+#include "CVLItem.h"
+#include "DlogPref.h"
+#include "EPSF.h"
+#include "imgHandl.h"
+#include "BMPHandl.h"
+#include "TIFHandl.h"
+#include "Informtn.h"
+#include "SinTable.h"
+#include "VMath.h"
+#include "VGraphic.h"
+#include "VGUtil.h"
+#include "VSound.h"
+#include "VWindow.h"
+#include "VFile.h"
+#include "VError.h"
+#include "VTextDef.h"
+#include "CVWCntrl.h"
+#include "AppText.h"	//PRO-JAP
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "Surface.h"	// MERGE-GOURAUD
+
+#if VR
+#include "Walkthru.h"
+#endif
+
+#define 	SCROLL_SPEED	15
+char rotateChar = ROTATE_ANCHOR;
+char selectChar = SELECT_CROSS;
+ 		
+PointFFixed BuildScale(Point p1,Point p2,Point anch,int constrain);
+PointFFixed 
+BuildScale(Point p1,Point p2,Point anch,int constrain)
+	{
+	PointFFixed scal;
+
+	p1.h -= anch.h;
+	p1.v -= anch.v;
+	p2.h -= anch.h;
+	p2.v -= anch.v;
+	if(p1.h&&p2.h) scal.h = DblToFixed((double)p1.h/(double)p2.h); else scal.h = FFOne; 
+	if(p1.v&&p2.v) scal.v = DblToFixed((double)p1.v/(double)p2.v); else scal.v = FFOne;
+	
+	if(constrain)
+		{
+		FFMax(scal.h,scal.h,scal.v);
+		scal.v = scal.h;
+		}
+
+	return scal;
+	}
+void 
+CadDraft::SetController(Controller *ctrl) 
+	{
+	CAVEnvironment	*e;
+	controller = ctrl;
+	if(ctrl->information && ctrl->information->environment) 
+		{
+		e = ctrl->information->environment;
+		environment->SetView(e->GetView());	
+		environment->SetID(e->GetID());
+		ctrl->information->environment = environment;
+		}
+	}
+	
+void 
+CadDraft::cPane(int flag) 
+	{				
+	Draft::cPane(flag);
+		
+	editList = new(V_Array);
+	editList->cArray(0,sizeof(void*),8);/* evil */
+	
+	horzGrid = NULL;
+	vertGrid = NULL;
+	horzGuide = NULL;
+	vertGuide = NULL;
+	
+	tempPoints = new(V_Array);
+	tempPoints->cArray(0,sizeof(PointLong),4);
+	tempFFPoints = new(V_Array);
+	tempFFPoints->cArray(0,sizeof(PointFFixed),4);
+
+	environment = new(CAVEnvironment);
+	environment->cCAVEnvironment();
+	
+	angle = FFZero;
+	editTool = bARROW;
+	draftAction = FALSE;
+	editFlags = FALSE;
+	editMode = modeNone;
+	editAction = modeNone;
+	constrainMode = constrainNone;			
+	peerList = NULL;	
+	
+	currentModifier = 0;
+	lastModifier = 0;
+	currentScale = PtFFOne;
+	lastScale = PtFFOne;
+	
+	SetHSpeed(SCROLL_SPEED);
+	SetVSpeed(SCROLL_SPEED);
+	GridOn(TRUE);
+	GridColor(vBlack);
+	GuideColor(vBlack);
+	}
+
+void 
+CadDraft::dPane() 
+	{
+	editList->dArray();
+	tempPoints->dArray();
+	tempFFPoints->dArray();
+
+	environment->dCAVEnvironment();        // jca 8APR94 delete the environment
+
+	Draft::dPane();
+	}
+
+void 
+CadDraft::CalcSize(Rect *r,Point *p,int type,int warning)
+	{
+	controller->GetPlace(r,warning,toolCCad);
+	}
+
+void 
+CadDraft::Display(int type,int x,int y)
+	{
+	Rect		r,tr;
+	FFixed		oldScale;
+	Point		p;
+	Point		end;
+	int			update;
+	extern int gCurrentlyDoingIO;	//MERGE-PRO-JAM-2 fixes 6-button crash & crash on screen-save return
+
+	if(gCurrentlyDoingIO) return;	//MERGE-PRO-JAM-2
+
+	SetMetaPort();
+	
+	tr = dataRect;
+	switch(type)
+		{
+		case PICT_DRAW:	
+			Draft::Display(type,x,y);
+			lOrigin.h = FFLongMult(scale2Local,origin.h);
+			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));
+			MakeWorldRect(&r,0,0,min(worldMax.v,dataRect.bottom),min(worldMax.h,dataRect.right));
+			environment->SetPenSizes(1,1);
+		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth);
+ 	 		update = FALSE;
+			break;
+			
+		case PRINT_DRAW:	
+		    oldScale = scale2Local;
+			Draft::Display(type,x,y);
+			lOrigin.h = FFLongMult(scale2Local,origin.h);
+			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));
+			MakeWorldRect(&r,0,0,min(worldMax.v,paneRect.bottom),min(worldMax.h,paneRect.right));
+			environment->SetPenSizes(1,1);   // ABD changed from 3,3 JAN95
+		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth);
+		    scale2Local = oldScale;
+ 	 		update = FALSE;
+			break;
+		
+		default:
+			Draft::Display(type,x,y);
+		    origin = pcc(controller)->SetOrigin(origin);
+			lOrigin.h = FFLongMult(scale2Local,origin.h);
+			lOrigin.v = FFLongMult(scale2Local,FFNeg(origin.v));
+			MakeWorldRect(&r,0,0,min(worldMax.v,dataRect.bottom),min(worldMax.h,dataRect.right));
+			environment->SetPenSizes(1,1);
+		    environment->SetEnvironment(&tr,&r,lOrigin,scale2Local,depth);
+		    if(displayFlags && horzGrid && vertGrid)
+		    	DrawGrid();
+ 	 		update = TRUE;
+	       	break;
+        }       	
+
+	DrawContent(type);
+	
+	MetaCopy(&tr);
+	UnsetMetaPort();
+	
+	if(update)
+		{
+		pcc(controller)->Display(type);
+	    SetPane();
+	    }
+	}
+		
+#if VRML_ANCHOR		// ABD PRO25 AUG95
+void
+CadDraft::DrawURL(Point p, int redraw_only)
+{
+	// do nothing -- up to subclasses to override this routine and draw something
+}
+#endif
+
+void  
+CadDraft::DrawContent(int type)
+	{		
+	RulerItemDef	*itemDef;
+	RulerItem	**pItem;
+	PointFFixed	wPt;
+	Point		end,p;
+	RGBColor	col;
+	TickMark	*tickMark;
+	short		*pt,myAxis;
+	int			length,i;
+
+	if(bPOLY_ROOM == editTool && PICT_DRAW != type && PRINT_DRAW != type)
+		DrawTempPoints();
+
+	if(dataRect.right>worldMax.h)end.h = worldMax.h; else end.h = dataRect.right;
+   	if(dataRect.bottom>worldMax.v)end.v = worldMax.v; else end.v = dataRect.bottom;
+   	
+	if(displayFlags & DRAW_GUIDE)
+		{
+		myAxis = environment->GetAxis();
+		
+		if(horzGuide && (length = horzGuide->ALength()))
+			{
+				
+			wPt = PtFFZero;
+			pItem = (RulerItem**)horzGuide->Use();
+			if(DrawInColor()) 
+				{
+				itemDef = (*pItem)->GetItemDef();
+				col = itemDef->GetColor();
+				VForeColor(&col);
+				}
+			else 
+				VSetPattern(vPatBlack);
+			for(i = 0 ; i < length; i++,pItem++)
+				{
+				itemDef = (*pItem)->GetItemDef();
+				p.h = (*pItem)->scaleValue;
+				VMoveTo(p.h,0);
+				VLineTo(p.h,end.v);
+				}
+			horzGuide->Unuse();
+			}
+			
+		if(vertGuide && (length = vertGuide->ALength()))
+			{
+			wPt = PtFFZero;
+			pItem = (RulerItem**)vertGuide->Use();
+			if(DrawInColor()) 
+				{
+				itemDef = (*pItem)->GetItemDef();
+				col = itemDef->GetColor();
+				VForeColor(&col);
+				}
+			else 
+				VSetPattern(vPatBlack);
+			for(i = 0 ; i < length; i++,pItem++)
+				{
+				itemDef = (*pItem)->GetItemDef();
+				p.v = (*pItem)->scaleValue;
+				VMoveTo(0,p.v);
+				VLineTo(end.h,p.v);
+				}
+			vertGuide->Unuse();
+			}
+		}
+
+	   	#if VRML_ANCHOR		// ABD PRO25 AUG95
+	   	if(displayFlags & DRAW_URL)
+	   		DrawURL(p, TRUE);	// p is ignored if redraw_only is TRUE
+	   	#endif
+	}
+
+void
+CadDraft::DrawGrid()
+	{
+	RulerItemDef	*itemDef;
+	RulerItem	**pItem;
+	PointFFixed	wPt;
+	Point		end,p;
+	RGBColor	col;
+	TickMark	*tickMark;
+	short		*pt,myAxis;
+	int			length,i;
+
+	if(dataRect.right>worldMax.h)end.h = worldMax.h; else end.h = dataRect.right;
+   	if(dataRect.bottom>worldMax.v)end.v = worldMax.v; else end.v = dataRect.bottom;
+	
+	if(displayFlags & DRAW_GRID)
+		{
+	   	if(DrawInColor())
+	   	 	VForeColor(&gridColor);
+	   	 else
+	   	 	 VSetPattern(vPatGray);
+	   	 	
+	    length = horzGrid->ALength();
+	    tickMark = (TickMark*)horzGrid->Use();
+	    for(i = 0; i < length; i++,tickMark++)
+	    	{
+	    	if(unitTick==tickMark->type)
+	    		{
+	    		VMoveTo(tickMark->where,0); 
+	    		VLineTo(tickMark->where,end.v);
+	    		} 
+	    	}
+	    horzGrid->Unuse();
+	    length = vertGrid->ALength();
+	    tickMark = (TickMark*)vertGrid->Use();
+	    for(i = 0; i < length; i++,tickMark++)
+	    	{
+	    	if(unitTick==tickMark->type)
+	    		{
+	    		VMoveTo(0,tickMark->where); 
+	    		VLineTo(end.h,tickMark->where);
+	    		} 
+	    	}
+	    vertGrid->Unuse();
+		}
+
+	if(displayFlags & DRAW_ORIGIN)
+		{
+		itemDef = hLocalOrigin->GetItemDef();
+		p.h = hLocalOrigin->scaleValue;
+		if(DrawInColor()) 
+			{
+			col = itemDef->GetColor();
+			VForeColor(&col);
+			}
+		else 
+	   	 	 VSetPattern(vPatBlack);
+			
+		VMoveTo(p.h,0);
+		VLineTo(p.h,end.v);
+
+		itemDef = vLocalOrigin->GetItemDef();
+		p.v = vLocalOrigin->scaleValue;
+			
+		VMoveTo(0,p.v);
+		VLineTo(end.h,p.v);
+		}
+	
+	}
+		
+void  
+CadDraft::DrawTempPoints()
+	{	
+	Rect	r;
+	PointLong *tmpPt,drawOrigin;
+	int		i,length;
+
+    if(!(length = tempPoints->ALength())) return;
+    
+    VPenMode(vPatXor);  
+    drawOrigin = environment->GetDrawOrigin();
+	tmpPt = (PointLong *)tempPoints->Use();
+	VMoveTo(tmpPt->h - drawOrigin.h,tmpPt->v - drawOrigin.v);
+	tmpPt++;
+	for(i = 1; i < length; i++,tmpPt++) 
+		VLineTo(tmpPt->h - drawOrigin.h,tmpPt->v - drawOrigin.v);
+	tempPoints->Unuse();
+	VPenMode(vPatCopy);
+	
+	if(editFlags&EDIT_ANCHOR)
+		{
+		VTextMode(vSrcXor);
+ 		TextSetUp(vButtonFont,vButtonFontSize,vNormal);	
+ 		r.left = dropAnchor.h-7;
+ 		r.bottom = dropAnchor.v-5;
+ 		r.top=r.bottom-vButtonFontSize;
+		VDrawChar(rotateChar,&r);
+		VTextMode(vSrcOr);
+		}
+		
+	}
+	
+void  
+CadDraft::ResetTools()
+	{	
+	if(modeNone == editMode) return;
+
+	SetPane();	
+    
+ 	DrawTempPoints();
+ 	SetBuildPoint(PtFFZero,PtZero,FALSE);
+ 	editFlags = FALSE;
+ 	DrawMarquee(TRUE);
+    VPenMode(vPatXor);
+   	VMoveTo(anchorPosition.h,anchorPosition.v);
+	VLineTo(lastPosition.h,lastPosition.v);		
+	VPenMode(vPatCopy);
+	UnsetPane();
+	
+	SetTrackMode(POSITION_TRACK);
+	}
+
+// { DAS-VR-VRTOOLS 8/22/93 turning off some, turning on others.
+void  
+CadDraft::MouseDown(Point p,long modifiers)
+	{		
+	PointFFixed	worldPt;
+	
+	currentPositionR = p;
+	currentPosition = p;
+	currentModifier = modifiers;
+	editFlags &= ~EDIT_CURSOR_MOVE;
+
+	worldPt = Constrain(&p,currentModifier);
+	currentPosition = p;
+	anchorPosition = currentPosition;
+	lastPosition = currentPosition;
+	
+	editTool = pcc(controller)->GetEditTool();
+	downTime = VGetTime();
+	SetBuildPoint(worldPt,currentPosition,TRUE);
+
+	if (environment) environment->SetPatternOrigin();
+	
+	switch(editTool)
+		{
+#if VWT
+		case bHAND:  
+			Hand(currentPosition,currentModifier,MOUSE_DOWN); 
+			break;		
+			
+		case bROTATE_ROOM: 
+		case bSCALE_ROOM:
+			RotateObject(currentPosition,currentModifier,MOUSE_DOWN); 
+			break;			
+
+		case bARROW:
+		case bPLUS_MINUS:
+		case bHIDE: 
+		case bLOCK: 
+		case bSKEW_TOOL:
+		case bDROPPER:
+			SelectObject(currentPosition,currentModifier,MOUSE_DOWN);  
+			break;
+			
+		case bMEASURE_TOOL:
+		case bZOOM_USER:
+		case bZOOMIN:		// MERGE-GOURAUD-PRO
+		case bRECT_ROOM:
+		case bPOLY_ROOM:
+		case bREGPOLY_ROOM: 
+		case bCUT_ROOM: 
+			ConstructObject(currentPosition,currentModifier,MOUSE_DOWN); 
+			break;
+			
+		case bSURFACE_EDITOR:
+		case bTUMBLE_EDITOR:
+		case bLIGHT_EDITOR: 
+			
+#elif VR
+		case bSCALE_ROOM:
+		case bROTATE_ROOM:
+			RotateObject(currentPosition,currentModifier,MOUSE_DOWN); 
+			break;			
+		case bARROW:
+		case bSHAPE:
+			SelectObject(currentPosition,currentModifier,MOUSE_DOWN);  
+			break;
+//		case bZOOMIN:	//MERGE-GOURAUD-PRO
+//		case bZOOMOUT:	//MERGE-GOURAUD-PRO
+		case bSURFACE_EDITOR:
+			break;
+#endif 
+
+#if ((VR) || (VPRO))		// MERGE-GOURAUD-PRO
+		//case bZOOMIN:		// MERGE-GOURAUD-PRO
+		case bZOOMOUT:		// MERGE-GOURAUD-PRO
+			break;
+#endif
+
+		default:
+			break;
+		}
+	}
+
+void
+CadDraft::TrackHelp(Point pt, long modifier) // DAS-VWINDOWS 9/30/93
+	{
+	Rect r;	
+	r=dataRect;
+	/* Bubble(pt,&r,TXTB_DESEDITR);*/
+	}
+
+static int lastInside = FALSE;
+void  
+CadDraft::Track(Point p,long modifiers,int inside)
+	{		
+	int	changing,thisEvent,mDown;
+	Point3DFFixed	wPnt,aPnt,wp;
+	PointFFixed		worldPt;
+	Angle3DFFixed	wAgl;
+	Rect			dRect;
+    int				scrollWidth;
+	
+	currentPositionR = p;
+	currentPosition = p;
+	currentModifier = modifiers;
+	mDown = buttonDown & currentModifier;
+
+#if WINDOWS
+	// On Windows, the scroll bars are on top of the dataRect. Use a
+	// rect inside the scroll bars for the "Push" calculations.
+
+	dRect=dataRect;
+    scrollWidth=VScrollWidth();
+	dRect.right-=scrollWidth;
+    dRect.bottom-=scrollWidth;
+	inside=VPtInRect(p,&dRect);
+#endif //WINDOWS
+
+	if(inside)	
+		thisEvent = MOUSE_TRACK; 
+	else
+		{
+		if(!mDown||( modeNone == editMode)) 
+			{ 
+			if(lastInside!=inside)
+				{
+				pcc(controller)->ClearTrack(); 
+				lastInside = inside; 
+				}
+			return; 
+			}
+		else thisEvent = MOUSE_PUSH;
+		}
+	
+	lastInside = inside;	
+	editTool = pcc(controller)->GetEditTool();	
+	
+	if(mDown /* && (appDelayTime > (VGetTime() - downTime)) */ )
+		downTime = -1;
+	
+	worldPt = Constrain(&p,currentModifier);
+	if(MOUSE_PUSH != thisEvent)
+		currentPosition = p;
+	if(CursorMove(currentPosition,lastPosition)) editFlags |= EDIT_CURSOR_MOVE; 
+	else editFlags &= ~EDIT_CURSOR_MOVE;
+	
+	#if VRML_ANCHOR
+	if(displayFlags & DRAW_URL)
+		DrawURL(p, FALSE);
+	#endif
+
+	switch(editTool)
+		{		
+#if VWT
+		case bTUMBLE_EDITOR:
+		case bLIGHT_EDITOR: 
+			VSetCursor(vCursorArrow);  
+			break;
+
+		case bSURFACE_EDITOR: 
+			VSetCursor(vCursorCross);  
+			break;
+
+		case bHAND: 
+			VSetCursor(vCursorHand);  
+			Hand(currentPosition,currentModifier,thisEvent);
+			break;
+
+		case bHIDE: 
+			VSetCursor(vCursorHide);  
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+
+		case bLOCK: 
+			VSetCursor(vCursorLock);  
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+
+		case MOVE_EYE:
+		case ROTATE_EYE:
+		case bARROW:
+		case bSKEW_TOOL:
+			VSetCursor(vCursorArrow); 
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+
+		case bCONNECTOR: 
+			VSetCursor(vCursorConnect); 
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+
+		case bMEASURE_TOOL:
+		case bRECT_ROOM:
+		case bREGPOLY_ROOM:
+		case bZOOM_USER:
+			VSetCursor(vCursorCross);
+			ConstructObject(currentPosition,currentModifier,thisEvent);
+			break;
+
+#if VPRO	// MERGE-GOURAUD-PRO-2
+		case bZOOMIN:	// MERGE-GOURAUD-PRO
+			if (modifiers&V_OPTION)
+				VSetCursor(vCursorZoomOut);
+			else
+				VSetCursor(vCursorZoomIn);
+			ConstructObject(currentPosition,currentModifier,thisEvent);
+			break;
+#endif // VPRO
+
+		case bCUT_ROOM:
+		case bPOLY_ROOM:
+			VSetCursor(vCursorCross);
+			if(!inside)SetPane();
+			ConstructObject(currentPosition,currentModifier,thisEvent);
+			break;
+
+		case bSCALE_ROOM:
+		case bROTATE_ROOM:
+			VSetCursor(vCursorCross);
+			RotateObject(currentPosition,currentModifier,thisEvent);
+			break;
+
+		case bPLUS_MINUS: 
+			VSetCursor(vCursorCross); 
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+		
+		case bDROPPER:
+			VSetCursor(vCursorDropper); 
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+		
+		case bFINGER: /* for tumble editor */
+			VSetCursor(vCursorFinger);
+			break;
+#elif VR
+		case bSCALE_ROOM:
+		case bROTATE_ROOM:
+			VSetCursor(vCursorCross);
+			RotateObject(currentPosition,currentModifier,thisEvent);
+			break;			
+		case MOVE_EYE:
+		case ROTATE_EYE:
+		case bARROW:
+			VSetCursor(vCursorArrow); 
+			SelectObject(currentPosition,currentModifier,thisEvent); 
+			break;
+		case bSHAPE:
+			VSetCursor(vCursorArrow);
+			break;
+#if 0 //MERGE-GOURAUD-PRO
+		case bZOOMIN:
+			if (modifiers&V_OPTION)
+				VSetCursor(vCursorZoomOut);
+			else
+				VSetCursor(vCursorZoomIn);
+			break;
+		case bZOOMOUT:
+			if (modifiers&V_OPTION)
+				VSetCursor(vCursorZoomIn);
+			else
+				VSetCursor(vCursorZoomOut);
+			break;
+#endif	//MERGE-GOURAUD-PRO
+		case bSURFACE_EDITOR:
+			VSetCursor(vCursorCross);  
+			break;
+#endif			
+
+
+#if VR
+		case bZOOMIN:		// MERGE-GOURAUD-PRO
+			if (modifiers&V_OPTION)
+				VSetCursor(vCursorZoomOut);
+			else
+				VSetCursor(vCursorZoomIn);
+			break;
+#endif // VR
+
+#if  ((VR) || (VPRO))		// MERGE-GOURAUD-PRO
+		case bZOOMOUT:		// MERGE-GOURAUD-PRO
+			if (modifiers&V_OPTION)
+				VSetCursor(vCursorZoomIn);
+			else
+				VSetCursor(vCursorZoomOut);
+			break;
+#endif //  ((VR) || (VPRO))
+		default:
+			break;
+		}
+
+	/* lastPosition = currentPosition;*/
+	}
+
+void  
+CadDraft::MouseUp(Point p,long modifiers)
+	{	
+	PointFFixed worldPt;
+	Track(p,modifiers|buttonDown,VPtInRect(p,&dataRect)); // DAS-VR-FIX 9/22/93  // jca 27 Sept 93  (corrected the fix)
+	currentPositionR = p;
+	currentPosition = p;
+	currentModifier = modifiers;
+
+	worldPt = Constrain(&p,modifiers);
+	currentPosition = p;
+	if( bPOLY_ROOM != editTool )
+		SetBuildPoint(worldPt,currentPosition,TRUE);
+
+	if(CursorMove(anchorPosition,currentPosition)) editFlags |= EDIT_CURSOR_MOVE; 
+	else editFlags &= ~EDIT_CURSOR_MOVE;
+
+	// MERGE-GOURAUD-PRO-2 [[[
+	// let zoom tool be a lot more sloppy
+	if (editTool == bZOOMIN)
+	{
+		if(CursorMoveMore(anchorPosition,currentPosition)) editFlags |= EDIT_CURSOR_MOVE; 
+		else editFlags &= ~EDIT_CURSOR_MOVE;
+	}
+	// MERGE-GOURAUD-PRO-2 ]]]
+
+	ffLastPt = worldPt;
+	lastPositionR = World2Local(ffLastPt,SCALE_ABSOLUTE);
+		
+	switch(editTool)
+		{
+#if VWT
+		case bHAND: 
+			Hand(currentPosition,currentModifier,MOUSE_UP); 
+			break;
+
+		case MOVE_EYE:
+		case ROTATE_EYE:
+		case bARROW:
+		case bPLUS_MINUS:
+		case bSKEW_TOOL:
+		case bCONNECTOR:
+		case bHIDE: 
+		case bLOCK: 
+		case bDROPPER:
+			SelectObject(currentPosition,currentModifier,MOUSE_UP); 
+			break;
+
+		case bZOOMIN:		// MERGE-GOURAUD-PRO
+		{
+			if (editFlags & EDIT_CURSOR_MOVE)
+			{
+				ConstructObject(currentPosition,currentModifier,MOUSE_UP);
+			}
+			else
+			{
+				if (modifiers&V_OPTION)
+					pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);
+				else
+					pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);
+				pcc(controller)->Request(NULL,msgUpdate,objTools,0);
+				SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93
+			}
+		}
+		break;
+
+		case bMEASURE_TOOL:
+		case bZOOM_USER:
+		case bRECT_ROOM:
+		case bCUT_ROOM:
+		case bREGPOLY_ROOM: 
+		case bPOLY_ROOM:
+			ConstructObject(currentPosition,currentModifier,MOUSE_UP);
+			break;
+
+		case bSCALE_ROOM:
+		case bROTATE_ROOM: 
+			RotateObject(currentPosition,currentModifier,MOUSE_UP); 
+			break;
+			
+		case bSURFACE_EDITOR:
+		case bTUMBLE_EDITOR:
+		case bLIGHT_EDITOR: 
+			if(OUT_POLY != InSelectedList(currentPositionR,currentModifier)) 
+				LaunchEditor();	 
+			break;
+
+#elif VR
+		case bSCALE_ROOM:
+		case bROTATE_ROOM:
+			RotateObject(currentPosition,currentModifier,MOUSE_UP);
+			break;			
+		case MOVE_EYE:
+		case ROTATE_EYE:
+		case bARROW:
+			SelectObject(currentPosition,currentModifier,MOUSE_UP); 
+			break;
+		case bSHAPE:
+			break;
+#if 0	//MERGE-GOURAUD-PRO
+		case bZOOMIN:
+			if (modifiers&V_OPTION)
+				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);
+			else
+				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);
+			pcc(controller)->Request(NULL,msgUpdate,objTools,0);
+			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93
+			break;
+		case bZOOMOUT:
+			if (modifiers&V_OPTION)
+				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);
+			else
+				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);
+			pcc(controller)->Request(NULL,msgUpdate,objTools,0);
+			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93
+			break;
+#endif	//MERGE-GOURAUD-PRO
+		case bSURFACE_EDITOR:
+			if(OUT_POLY != InSelectedList(currentPositionR,currentModifier)) 
+				LaunchEditor();	 
+			break;
+#endif			
+
+#if  ((VR) || (VPRO))		// MERGE-GOURAUD-PRO
+#if VR
+		case bZOOMIN:		// MERGE-GOURAUD-PRO
+		{
+			if (editFlags & EDIT_CURSOR_MOVE)
+			{
+				ConstructObject(currentPosition,currentModifier,MOUSE_UP);
+			}
+			else
+			{
+				if (modifiers&V_OPTION)
+					pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);
+				else
+					pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);
+				pcc(controller)->Request(NULL,msgUpdate,objTools,0);
+				SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93
+			}
+		}
+		break;
+#endif
+		case bZOOMOUT:		// MERGE-GOURAUD-PRO
+			if (modifiers&V_OPTION)
+				pcc(controller)->SetScale(pcc(controller)->GetScale()*2,TRUE);
+			else
+				pcc(controller)->SetScale(pcc(controller)->GetScale()/2,TRUE);
+			pcc(controller)->Request(NULL,msgUpdate,objTools,0);
+			SetTrackMode(POSITION_TRACK); // DAS-VR-FIX 9/17/93
+			break;
+#endif //  ((VR) || (VPRO))
+		default:
+			break;
+		}
+	}
+// } DAS-VR-VRTOOLS 8/22/93 turning off some, turning on others.
+	
+PointFFixed 
+CadDraft::Constrain(Point *p,long modifiers)
+	{
+	PointFFixed	result;
+	Point	constPt,testPt;
+	FFixed	tmpAngle;
+	int		minDimension;
+	
+	if((CONSTRAIN&modifiers) && (modeNone != editMode) && (modeSelect != editMode))	
+		{
+		switch(editTool)
+			{
+			case bROTATE_ROOM:
+				angle.intg = FindAngle(currentPosition.h - anchorPosition.h,currentPosition.v - anchorPosition.v);
+				angle.intg+=(CONSTRAIN_DEGREE_INCREMENT>>1);
+				angle.intg/=CONSTRAIN_DEGREE_INCREMENT;
+				angle.intg*=CONSTRAIN_DEGREE_INCREMENT;
+				break;
+			
+			case bSCALE_ROOM:
+				break;
+				
+			default:
+				if( constrainNone == constrainMode)
+					{
+					currentPosition = anchorPosition;
+					constPt.h = p->h - anchorPosition.h;
+					constPt.v = p->v - anchorPosition.v;
+					testPt.h = abs(constPt.h);
+					testPt.v = abs(constPt.v);
+					
+					minDimension = min(testPt.h,testPt.v);		
+					if((minDimension > (abs(testPt.h - testPt.v)>>1)))
+						constrainMode = constrainAngle;
+					else 
+						{
+						if(testPt.h == testPt.v)
+							constrainMode = constrainNone; 
+						else
+							{
+							if(testPt.h > testPt.v)constrainMode = constrainHorz; 
+							else constrainMode = constrainVert; 
+							}
+						} 
+					}	
+				else
+					{
+					constPt.h = p->h - anchorPosition.h;
+					constPt.v = p->v - anchorPosition.v;
+					minDimension = min(abs(constPt.h),abs(constPt.v));		
+					}
+				if(constPt.h<0) constPt.h = -minDimension; else constPt.h = minDimension;
+				if(constPt.v<0) constPt.v = -minDimension; else constPt.v = minDimension;
+								
+				switch(constrainMode)
+					{
+					case constrainNone: break;	
+					case constrainHorz:  p->v = anchorPosition.v; break;
+					case constrainVert:  p->h = anchorPosition.h; break;
+					case constrainAngle: p->h = anchorPosition.h+constPt.h;  p->v = anchorPosition.v+constPt.v; break;
+					}
+				angle.intg = FindAngle(p->h - anchorPosition.h,p->v - anchorPosition.v);
+				break;
+			}
+		}
+	else
+		{
+		constrainMode = constrainNone;	
+		if(modeNone == editMode)angle = FFZero;
+		else angle.intg = FindAngle(p->h - anchorPosition.h,p->v - anchorPosition.v);
+		}
+	
+	result = pcc(controller)->Constrain(p,&angle);
+
+
+	SetPane();	
+	return(result);		
+	}
+	
+void 
+CadDraft::SetZoom(double newZoom)
+	{
+	Draft::SetZoom(newZoom);
+	if(environment)environment->scale = scale2Local;
+	}
+
+void CadDraft::SetGrid(V_Array *hArray,V_Array *vArray) 
+	{ horzGrid = hArray; vertGrid = vArray; }
+void CadDraft::SetGuide(V_Array *hArray,RulerItem *hOI,V_Array *vArray,RulerItem *vOI) 
+	{ horzGuide = hArray; hLocalOrigin = hOI; vertGuide = vArray; vLocalOrigin = vOI;}
+void CadDraft::GridOn(int state) { displayFlags = state; }
+void CadDraft::SetTrackMethod(char method) { trackMethod = method; }
+void CadDraft::GridColor(RGBColor clr) { gridColor = clr; }
+void CadDraft::GuideColor(RGBColor clr) { guideColor = clr; }
+void CadDraft::DrawGuide(int where,int direction,int type) 
+	{
+	Point pFrom,pTo;
+	
+	SetPane();
+	if(DrawInColor())
+		VForeColor(&vBlack);
+	else
+		VSetPattern(vPatBlack);
+		
+	if(HORZ_RULER == direction)
+		{
+		pTo.h = pFrom.h = where;
+		pFrom.v = 0;
+		pTo.v = dataRect.bottom;
+		}
+	else
+		{
+		pTo.v = pFrom.v = where;
+		pFrom.h = 0;
+		pTo.h = dataRect.right;
+		}
+		
+	switch(type)
+		{
+		case drawMove:
+		case drawStep:
+		case drawCancel:
+		case drawPush:
+			DrawMarquee(TRUE);
+			VMoveTo(pFrom.h,pFrom.v);
+			VLineTo(pTo.h,pTo.v);
+			break;
+
+		case drawStay:    
+			DrawMarquee(FALSE);
+			VMoveTo(pFrom.h,pFrom.v);
+			VLineTo(pTo.h,pTo.v);    
+			break;		
+		}
+	UnsetPane();
+	}
+
+int 
+CadDraft::CheckIntersect(long modifiers) 
+	{
+	PointLong	*lp,drawOrigin;
+	Point		l1,l2,r1,r2,pivot,place,start;
+	int			i,length,intersect;
+		
+	if(bPOLY_ROOM != editTool) return(FALSE);
+	
+	if((length = tempPoints->ALength() - 2) < 0) return(FALSE);
+	
+	intersect = FALSE;
+	drawOrigin = environment->GetDrawOrigin();
+
+	lp = (PointLong *)tempPoints->Use();
+	l2.h = lp[length+1].h - drawOrigin.h;
+	l2.v = lp[length+1].v - drawOrigin.v;
+	start.h = lp[0].h - drawOrigin.h;
+	start.v = lp[0].v - drawOrigin.v;
+	
+	if(!CursorMove(currentPosition,l2)) { tempPoints->Unuse(); return(INTERSECT); }
+	
+#if MACINTOSH  // jca 24FEB94
+	// on the Mac, the control key isn't used for anything much and we
+	// can use it for secret features.  Under Windows, we use it as an
+    // option key (so we can't do this).
+	if(modifiers&V_CONTROL)/* can make cancave piece */
+		{		
+		for(i = 0; i < length; i++,lp++)
+			{
+			l1.h = lp->h - drawOrigin.h; 
+			l1.v = lp->v - drawOrigin.v;
+			r1.h = lp[1].h - drawOrigin.h;
+			r1.v = lp[1].v - drawOrigin.v;
+			if(INTERSECT == (intersect = Intersect(l2,currentPosition,l1,r1)))  
+				{ r2 = start; break; }
+			}
+		}
+	else
+#endif // MACINTOSH
+		{
+		l1.h = lp[length].h - drawOrigin.h; 
+		l1.v = lp[length].v - drawOrigin.v;
+		r1.h = lp[1].h - drawOrigin.h;
+		r1.v = lp[1].v - drawOrigin.v;
+		r2 = start;
+		if(PointConvex(l1,l2,r1,r2,currentPosition))intersect = FALSE; else intersect = INTERSECT;
+		}
+		
+	if(INTERSECT == intersect)
+		{
+		anchorPosition = l2;
+		currentPosition = r2;
+		}
+		
+	tempPoints->Unuse();
+	
+	return(intersect);
+	}
+	
+int 
+CadDraft::BuildPoly(long modifiers) 
+	{
+	PointLong	startPt,endPt,drawOrigin;
+	int	state,length;
+	
+	drawOrigin = environment->GetDrawOrigin();
+	length = tempPoints->ALength();
+	
+	if(doubleClick & modifiers)
+		{
+		if(3 > length) 
+			{ 
+			VPlaySound(beepSound); 
+			state = FALSE; 
+			} 
+		else 
+			{
+			tempPoints->Get(length-1,&endPt);
+			currentPosition = lastPosition;
+			anchorPosition.h = endPt.h - drawOrigin.h;
+			anchorPosition.v = endPt.v - drawOrigin.v;
+			state = TRUE;
+			}
+		}
+	else 
+		{	
+		tempPoints->Get(0,&startPt);
+		tempPoints->Get(length-1,&endPt);
+		startPt.h -= drawOrigin.h;startPt.v -= drawOrigin.v;
+		endPt.h -= drawOrigin.h;endPt.v -= drawOrigin.v;
+		if((abs(currentPosition.h - startPt.h) < 5) && (abs(currentPosition.v - startPt.v) < 5) 
+				&& (currentPosition.h != endPt.h) && (currentPosition.v != endPt.v) 
+				&& 3 <= length)
+			{
+			currentPosition.h = startPt.h;
+			currentPosition.v = startPt.v;
+			state = TRUE;
+			}
+		else
+			state = FALSE;
+		}
+		
+	return(state);
+	}
+
+
+int 
+CadDraft::KeyAction(char c,long modifiers)
+	{		
+	if((buttonDown & modifiers)) return(FALSE);
+
+	switch((unsigned char)c)
+		{	
+		case 0xCA:	
+		case V_SPACE:
+		 pcc(controller)->SetTool( modifiers, _TOGGLE );
+		 break;
+		case V_DELETE: 	return((EditBuffer(MSG_CLEAR,modifiers) < noErr) ? FALSE : TRUE); break;
+		case V_LEFTARROW: 
+		case V_RIGHTARROW:
+		case V_UPARROW: 
+		case V_DOWNARROW:
+			Nudge(c,modifiers);		// MERGE-GOURAUD-PRO-3
+			break;			
+		default: return(FALSE); break;
+		}
+		
+	return(TRUE);
+	}
+
+int 
+CadDraft::GetAction(long action,long modifiers)
+	{
+	InputTextDialog		*inputDialog;
+	AppPreference	*appPreference;
+	DefaultPreference *defPref;
+	PrefDialog	*prefDialog;
+	V_Picture		*pictDisplay;
+	char		str[256];
+	RGBColor	col;
+	int 	state,numSides,result, lastPref;
+	int		err = noErr;						// jca 20 Oct 93
+
+	if(modeNone != editMode) return(FALSE);
+	
+	switch(action)
+		{	
+		case  MSG_CUT:
+		case  MSG_COPY:
+		case  MSG_DUPLICATE:
+		case  MSG_PASTE:
+		case  MSG_UNDO:  
+		case  MSG_CLEAR:
+			err = EditBuffer(action,modifiers);		// jca Oct 93 {
+			if (err < noErr)	
+				VPlaySound(beepSound);			// if this failed, tell somebody
+			return((err < noErr) ? FALSE : TRUE); 
+			break;										// jca Oct 93 }
+		case  MSG_DESELECTALL: SelectAll(FALSE); break;
+		case  MSG_SELECTALL: SelectAll(TRUE); break;
+		case  MSG_MAGNIFY: controller->Request(NULL,objTools,bZOOM_UP,0); break;
+		case  MSG_MINIFY: controller->Request(NULL,objTools,bZOOM_BACK,0); break;
+		case  MSG_CENTERVIEW: MovePane(0,0,SCROLL_DRAW); break;
+		case  MSG_GROUP: Grouping(TRUE); break;
+		case  MSG_UNGROUP: Grouping(FALSE); break;
+		case  MSG_NEWLAYER: controller->Request(NULL,msgCreate,objList,0);break;
+		case  MSG_DELLAYER: controller->Request(NULL,msgDestroy,objList,0);break;			
+		case  MSG_DEFAULTS:
+        {
+		RGBColor lastColor = ((CadControl*)(controller))->GetColor();	// PRO-13
+			appPreference = controller->GetPreference();
+			prefDialog = new(PrefDialog);
+			/* jca.  I think this is how it should work. */
+            lastPref = appPreference->lastItem;
+			result = prefDialog->cPrefDialog(controller, prefDefaults);
+			appPreference->lastItem = lastPref;
+			((CadControl*)(controller))->SetColor(lastColor);	// PRO-13 restore last color dammit
+		}
+			break;
+		case  MSG_TRANSPARENT: SetOpacity(TRANSPARENT_NOM); break;
+		case  MSG_TRANSLUCENT: SetOpacity(TRANSLUCENT_NOM); break;
+		case  MSG_OPAQUE: SetOpacity(OPAQUE_NOM); break;
+
+		case  MSG_FLAT_SHADED: SetShadeType(SHADE_FLAT); break;	// MERGE-GOURAUD
+		case  MSG_GOURAUD_SHADED: SetShadeType(SHADE_GOURAUD); break;	// MERGE-GOURAUD
+			
+		case  MSG_PRINT:
+			#if !SAVE_DISABLED 	// ABD-SAVE-DISABLED
+			VOutput((V_Display*)theWindow->GetVPrint()); 
+			#endif // SAVE_DISABLED 	// ABD-SAVE-DISABLED
+		case  MSG_UNROTATE: UnPosition(bROTATE_ROOM); break;
+		case  MSG_UNSCALE: UnPosition(bSCALE_ROOM); break;
+		case  MSG_UNSKEW: UnPosition(bSKEW_TOOL); break;
+		case  MSG_COLOR: col = pcc(controller)->GetColor(); SetColor(col); break;
+		case  MSG_COLORPOP: 
+			col = pcc(controller)->GetColor();
+			sprintf(str,"%s",TXT_SELECT_OBJECT_COLOR);		// PRO-JAP
+			VColorWheel(str,&col);
+			SetColor(col); 
+			break;
+		
+		case  MSG_SIDES:   
+			appPreference = controller->GetPreference();
+			defPref = (DefaultPreference*)appPreference->GetPreference(preferDefaults);
+			numSides = defPref->regularSides;
+			if(!(OPT_EDIT_MODE&modifiers))
+				{
+				sprintf(str,"%i",numSides);
+				inputDialog = new(InputTextDialog);
+				if(!inputDialog->cInputDialog(TXT_SIDES,TXT_SET_NUM_SIDES,str,inputNumber))break;	// PRO-JAP
+				sscanf(str,"%i",&numSides);
+				numSides = min(numSides,32);
+				numSides = max(numSides,3);
+				}
+			SetSides(numSides,TRUE);
+			break;
+			
+		case  MSG_HIDEALL: SetEditState(EDIT_HIDDEN,modifiers,TRUE); break;
+		case  MSG_SHOWALL: SetEditState(EDIT_HIDDEN,modifiers,FALSE); break;
+		case  MSG_LOCKSEL: SetEditState(EDIT_LOCKED,modifiers,TRUE); break;
+		case  MSG_UNLOCKALL: SetEditState(EDIT_LOCKED,modifiers,FALSE); break;
+
+		case  MSG_E_WLIGHT: 
+			pcc(controller)->LaunchEditor(NULL,FFZero,NULL,Pt3DFFZero,toolCRTLLight);			
+			break;
+			
+		default: return(FALSE); break;
+		}
+		
+	return(TRUE);
+	}
+		
+void 
+CadDraft::SetBuildPoint(PointFFixed pt, Point p, int action)
+	{
+	PointFFixed	fp;
+	PointLong	sp;
+	
+	if(TRUE == action)
+		{	
+		sp.h = lOrigin.h + p.h;
+		sp.v = lOrigin.v + p.v;
+		tempPoints->Append(&sp);
+		tempFFPoints->Append(&pt);
+		}
+	else
+		{
+		tempPoints->SetLength(0);
+		tempFFPoints->SetLength(0);
+//		if(bZOOM_USER == editTool)
+		if ((bZOOM_USER == editTool) || (bZOOMIN == editTool))	// MERGE-GOURAUD-PRO
+			controller->Request(NULL,msgUpdate,objDraft,0);/* Not Okay */
+		}
+	}
+	
+void 
+CadDraft::ConstructObject(Point p,long modifiers,short action)
+	{
+	Rect		r;
+	PointLong	lp,ap,drawOrigin;
+	Point	oldAnchor,oldLast;
+	double		newZoom;
+	int 		moveType,length;
+	
+	switch(action)
+		{
+		case MOUSE_DOWN:
+			switch(editTool)
+				{
+				case bPOLY_ROOM:
+					if(modeTranslate == editMode)
+						{													
+						length = tempPoints->ALength()-1;
+						tempPoints->Get(length,&lp);
+						tempPoints->SetLength(length);
+
+						if(BuildPoly(modifiers))
+							{
+							tempFFPoints->SetLength(length);
+							CreateObject(p,modifiers);
+							SetTrackMode(POSITION_TRACK);
+							return;
+							}
+												
+						if(INTERSECT == CheckIntersect(modifiers)) 
+							{	
+							tempFFPoints->SetLength(length);
+							return;
+							}
+						else
+							{							
+							oldAnchor = anchorPosition;
+							oldLast = lastPosition;
+							
+							drawOrigin = environment->GetDrawOrigin();	
+							tempPoints->Get(length-1,&ap);
+							anchorPosition.h = ap.h - drawOrigin.h;
+							anchorPosition.v = ap.v - drawOrigin.v;
+							DisplayObject(drawCancel);
+							lastPosition.h = lp.h - drawOrigin.h;
+							lastPosition.v = lp.v - drawOrigin.v;
+							tempPoints->Append(&lp);
+							VSetPattern(vPatBlack);
+							SetPane();	// jca 24FEB94 set pane so we'll draw right
+							VMoveTo(anchorPosition.h,anchorPosition.v);
+							VLineTo(lastPosition.h,lastPosition.v);
+							UnsetPane();	// jca 24FEB94 set pane so we'll draw right
+
+							anchorPosition = oldAnchor;
+							lastPosition = oldLast;
+							}	
+						}
+					else
+						lastPosition = currentPosition;
+					
+				case bREGPOLY_ROOM:	
+				case bRECT_ROOM:
+
+				case bZOOMIN:	// MERGE-GOURAUD-PRO
+				case bZOOM_USER:
+					SetTrackMode(POSITION_EDIT);
+					DisplayObject(drawStep);
+					editMode = modeTranslate;
+					break;
+				
+				case bCUT_ROOM:
+					SetTrackMode(POSITION_EDIT);
+					DisplayObject(drawStep);
+					editMode = modeTranslate;
+					break;
+				
+				case bMEASURE_TOOL:
+					SetTrackMode(POSITION_EDIT);
+					DisplayObject(drawStep);
+					editMode = modeTranslate;
+					break;
+				}
+			break;
+			
+		case MOUSE_TRACK:
+			if( modeTranslate != editMode ) return;
+			
+			if(editFlags&EDIT_CURSOR_MOVE)
+				{
+				CheckIntersect(modifiers);
+				moveType = drawMove; 
+				}
+			else 
+				moveType = drawStay;
+				
+			switch(editTool)
+				{		
+				case bMEASURE_TOOL:
+				case bRECT_ROOM:
+				case bZOOMIN:		// MERGE-GOURAUD-PRO
+				case bZOOM_USER:
+				case bPOLY_ROOM:
+				case bREGPOLY_ROOM:
+				case bCUT_ROOM:
+					DisplayObject(moveType);
+					break;
+				}
+			break;
+			
+		case MOUSE_PUSH:
+			if( modeNone == editMode ) return;
+
+			DisplayObject(drawPush);
+			Push(currentPosition.h,currentPosition.v);
+			DisplayObject(drawPush);
+			break;
+
+		case MOUSE_UP:		
+			if( bPOLY_ROOM == editTool ) return;
+			if( modeNone == editMode ) return;
+			
+			if(editFlags&EDIT_CURSOR_MOVE)
+				{
+				switch(editTool)
+					{
+					case bZOOMIN:		// MERGE-GOURAUD-PRO
+					case bZOOM_USER:
+						DisplayObject(drawCancel);
+						MakeRect(&r,anchorPosition,lastPosition);
+						pcc(controller)->SetScale(ZoomRect(&r),TRUE);
+						controller->Request(NULL,msgUpdate,objTools,0);
+						break;
+
+					case bRECT_ROOM:
+						BuildRect();
+						CreateObject(p,modifiers);
+						break;
+
+					case bREGPOLY_ROOM:
+						BuildRegular();
+						CreateObject(p,modifiers);
+						break;
+
+					case bCUT_ROOM:
+						CreateObject(p,modifiers);
+						break;
+
+					case bMEASURE_TOOL:
+						DisplayObject(drawStep);
+						editMode = modeNone;
+						break;
+					}
+				}
+			else
+				DisplayObject(drawCancel);
+			
+			SetTrackMode(POSITION_TRACK);
+			break;
+		}
+	}
+	
+void 
+CadDraft::DrawMarker()
+	{
+	Rect rf,rt;
+	char ch;
+	CAVWalkController *cvw;
+
+	switch(editTool)
+		{
+		case bROTATE_ROOM:
+#if WINDOWS
+			ch = 3;
+			rt.left=anchorPosition.h-7;
+			rt.bottom=anchorPosition.v+8;
+#elif MACINTOSH
+			ch = ROTATE_ANCHOR;
+			rt.left=anchorPosition.h-7;
+			rt.bottom=anchorPosition.v-5;
+#endif
+			break;
+		case bSCALE_ROOM:
+#if WINDOWS
+			ch = 3;
+			rt.left=dropAnchor.h-7;
+			rt.bottom=dropAnchor.v+8;
+#elif MACINTOSH
+			ch =  ROTATE_ANCHOR;
+			rt.left=dropAnchor.h-7;
+			rt.bottom=dropAnchor.v-5;
+#endif
+			break;
+		default:
+#if WINDOWS
+			ch = 2;
+			rt.left=lastPosition.h-5;
+			rt.bottom=lastPosition.v+11;
+#elif MACINTOSH
+			ch = SELECT_CROSS;
+			rt.left=lastPosition.h-6;
+			rt.bottom=lastPosition.v-1;
+#endif
+			break;
+		}
+	rt.top=rt.bottom-vButtonFontSize;	
+	rt.right=rt.left+vButtonFontSize;
+
+	rf.top=rf.left=0;
+	rf.bottom=rf.right=16;
+#if WINDOWS
+	/* if the currentscreen is defined, use that, otherwise, use this. DAS */
+/*	((CAVWalkController*)controller)->sIcon[ch]->MetaToMode(
+		currentscreen?(V_Display*)currentscreen:(V_Display*)currentPane,&rf,&rt,SRCINVERT); */
+	cvw= (CAVWalkController*)controller->controller;
+	cvw->sIcon[ch]->MetaToMode(this,&rf,&rt,SRCINVERT);
+#elif MACINTOSH
+	VTextMode(vSrcXor);
+ 	TextSetUp(vButtonFont,vButtonFontSize,vNormal);	
+	VDrawChar(ch,&rt);	
+	VTextMode(vSrcOr);
+#endif
+	}
+	
+void 
+CadDraft::RotateObject(Point p,long modifiers,short action)
+	{
+	PointFFixed	pt;
+	FFixed dummy;
+	int	moveType;
+	
+	switch(action)
+		{
+		case MOUSE_DOWN:
+			if(!selectedList->ALength()) break;
+			selectedList->CopyArray(editList);
+			if(bSCALE_ROOM == editTool)
+				{
+				if(!(editFlags&EDIT_ANCHOR)) 
+					{
+					ffDropAnchor = ObjectCenter(&dummy);
+					dropAnchor = World2Local(ffDropAnchor,SCALE_ABSOLUTE);
+					}
+				tempFFPoints->Insert(0,&ffDropAnchor);
+				currentScale = BuildScale(currentPosition,anchorPosition,dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);
+				lastScale = currentScale;
+				}
+			SetTrackMode(POSITION_EDIT);
+			TranslateObject(currentPosition,modifiers,drawStep);
+			editMode = modeWait;
+			break;
+			
+		case MOUSE_PUSH:
+			if( modeNone == editMode ) return;
+			
+			TranslateObject(currentPosition,modifiers,drawPush);
+			Push(currentPosition.h,currentPosition.v);
+			TranslateObject(currentPosition,modifiers,drawPush);
+			break;
+
+		case MOUSE_TRACK:
+			if(modeNone == editMode)return;
+			if(editFlags&EDIT_CURSOR_MOVE)
+				moveType = drawMove; 
+			else 
+				moveType = drawStay;
+
+/*			if (editTool == bSCALE_ROOM)
+            	{
+				if (moveType == drawMove)
+					{
+					currentScale = BuildScale(currentPosition,anchorPosition,
+						dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);
+					editMode=modeTranslate;
+					}
+				}
+			else
+				editMode=modeTranslate;
+
+			anchorAngle = FFZero;
+			TranslateObject(currentPosition,modifiers,moveType);
+*/
+			switch(editMode)
+				{
+				case modeWait:
+					if(bROTATE_ROOM == editTool)
+						{
+						angle = lastAngle;
+						if((abs(currentPosition.h - anchorPosition.h) > ROTATE_RANGE) 
+						|| (abs(currentPosition.v - anchorPosition.v) > ROTATE_RANGE))
+							editMode = modeTranslate;
+						}
+					else      
+						{
+						if(drawMove == moveType)
+							editMode = modeTranslate;
+						else
+							{
+							if( downTime > 0)
+								break;
+							}
+			
+						}
+						
+				case modeTranslate:
+					if(!FFEqual(lastAngle,angle))moveType = drawMove; 
+					anchorAngle = FFZero;
+					if((bSCALE_ROOM == editTool) && (moveType == drawMove))
+						currentScale = BuildScale(currentPosition,anchorPosition,dropAnchor,CONSTRAIN&modifiers ? TRUE : FALSE);
+					TranslateObject(currentPosition,modifiers,moveType);
+					break;
+				}       // */
+			break;
+			
+		case MOUSE_UP:
+			switch(editMode)
+				{
+				case modeNone:
+					TranslateObject(currentPosition,modifiers,drawCancel);	
+					SetTrackMode(POSITION_TRACK);
+					break;
+					
+				case modeWait:
+					if(OPT_EDIT_MODE&modifiers && bSCALE_ROOM == editTool )
+						{
+						DrawMarker();
+						editFlags = EDIT_ANCHOR;
+						tempFFPoints->Get(1,&ffDropAnchor);
+						dropAnchor = World2Local(ffDropAnchor,SCALE_ABSOLUTE);
+						currentPosition = currentPositionR;
+						DrawMarker();
+						}
+					TranslateObject(currentPosition,modifiers,drawCancel);	
+					SetTrackMode(POSITION_TRACK);
+					break;
+					
+				default:
+					TranslateObject(currentPosition,modifiers,drawCancel);	
+					SetTrackMode(POSITION_TRACK);
+					break;
+				}
+			break;
+		}
+	}
+	
+void
+CadDraft::SelectObject(Point p,long modifiers,short action)
+	{	
+	Rect	r;	
+	int moveType,found;
+	
+	switch(action)
+		{
+		case MOUSE_DOWN:
+			if(POLY_ERROR == InSelectedList(currentPositionR,modifiers)) editMode = modeNone;
+			else editMode = modeWait;
+			lastPosition = currentPosition;
+			break;
+			
+		case MOUSE_TRACK:
+			if(editFlags&EDIT_CURSOR_MOVE)moveType = drawMove;
+			else moveType = drawStay;
+			
+			switch(editMode)
+				{
+				case modeWait: 
+					if(drawStay == moveType &&  downTime > 0)
+						break;		
+					
+					downTime = -1;					
+					moveType = drawStep;
+
+					SetTrackMode(POSITION_EDIT);					
+					if(editAction || editList->ALength()) 
+						{ 
+						editMode = modeTranslate; 
+						TranslateObject(currentPosition,modifiers,moveType); 
+						}
+					else 
+						{ 
+						editMode = modeSelect; 
+						DisplayObject(moveType); 
+						}
+
+					break;
+					
+				case modeTranslate: 
+					TranslateObject(currentPosition,modifiers,moveType); 
+					break;
+
+				case modeSelect: 
+					DisplayObject(moveType);
+					break;
+				}			
+			break;
+		
+		case MOUSE_PUSH:
+			switch(editMode)
+				{
+				case modeSelect:
+					DisplayObject(drawPush);
+					Push(currentPosition.h,currentPosition.v);
+					DisplayObject(drawPush);
+					break;
+					
+				case modeTranslate:
+					TranslateObject(currentPosition,modifiers,drawPush);
+					Push(currentPosition.h,currentPosition.v);
+					TranslateObject(currentPosition,modifiers,drawPush);
+					break;
+				}
+			break;
+			
+		case MOUSE_UP:
+			switch(editMode)
+				{
+				case modeSelect:
+					DisplayObject(drawCancel);
+					SetTrackMode(POSITION_TRACK);
+#if VWT
+					if( (bARROW == editTool) || (bLOCK == editTool) || (bHIDE == editTool))
+#elif VR
+					if(bARROW == editTool)
+#endif
+						{
+						if(editFlags&EDIT_CURSOR_MOVE)
+							{
+							MakeRect(&r,anchorPosition,currentPosition);
+							SelectRect(&r,modifiers);
+							}
+						}
+					break;
+				
+				case modeTranslate:
+					TranslateObject(currentPosition,modifiers,drawCancel);					
+					break;
+
+				case modeWait:
+					editMode = modeNone;
+					if(OPT_EDIT_MODE&modifiers)
+						{
+						if(editFlags&EDIT_ANCHOR)DrawMarker();
+						editFlags |= EDIT_ANCHOR;
+						currentPosition = dropAnchor = currentPositionR;
+						DrawMarker();
+						}
+					break;
+				}
+			break;
+		}
+	}
+	
+void 
+CadDraft::KeyInput()
+	{
+	SetPane();
+	switch(editTool)
+		{
+		case bRECT_ROOM:
+			if(tempPoints->ALength()) ConstructObject(currentPosition,0L,MOUSE_UP);
+			else ConstructObject(currentPosition,0L,MOUSE_DOWN);
+			break;
+					
+		case bPOLY_ROOM:
+			ConstructObject(currentPosition,0L,MOUSE_DOWN);
+			break;
+		}
+	UnsetPane();
+	}
+
+void 
+CadDraft::DisplayObject(short state) 
+	{
+	PointLong	lp,drawOrigin;
+	Rect		r;
+	int			lasPos;
+	
+	SetPane(); // DAS-FIXPUSH 9/11/93
+
+	if (environment) environment->SetPatternOrigin();
+
+	switch(editTool)
+		{
+		case bSKEW_TOOL:
+		case bHIDE:
+		case bLOCK:
+		case bARROW:
+		case bZOOMIN:		// MERGE-GOURAUD-PRO
+		case bZOOM_USER:
+		case bRECT_ROOM:
+			switch(state)
+				{
+				case drawMove:
+					#if WINDOWS
+					//On Windows, Dotted lines and solid lines draw on slightly different
+                    //pixels, so this hack is necessary to avoid pixel dribble
+					if(MarqueeIsOdd())
+					{
+						DrawMarquee(FALSE);
+						DrawRect(anchorPosition,lastPosition);						
+					}
+                    #endif
+					DrawMarquee(TRUE);
+					DrawRect(anchorPosition,lastPosition);						
+					lastPosition = currentPosition;
+						
+				case drawStep:
+				case drawCancel:
+				case drawPush:
+					DrawMarquee(TRUE);
+					DrawRect(anchorPosition,lastPosition);
+					break;
+					
+				case drawStay:
+					DrawMarquee(FALSE);
+					DrawRect(anchorPosition,lastPosition);
+					break;
+				}
+			break;
+			
+		case bMEASURE_TOOL:
+		case bCUT_ROOM:
+		case bPOLY_ROOM:
+			switch(state)
+				{
+				case drawStay:
+					DrawMarquee(FALSE);
+					VMoveTo(anchorPosition.h,anchorPosition.v);
+					VLineTo(lastPosition.h,lastPosition.v);
+					break;
+
+				case drawMove:
+					#if WINDOWS
+					//On Windows, Dotted lines and solid lines draw on slightly different
+                    //pixels, so this hack is necessary to avoid pixel dribble
+					if(MarqueeIsOdd())
+					{
+						DrawMarquee(FALSE);
+						VMoveTo(anchorPosition.h,anchorPosition.v);
+						VLineTo(lastPosition.h,lastPosition.v);
+					}
+                    #endif
+					DrawMarquee(TRUE);
+					VMoveTo(anchorPosition.h,anchorPosition.v);
+					VLineTo(lastPosition.h,lastPosition.v);
+
+					lastPosition = currentPosition;
+											
+				case drawPush:
+				case drawCancel:
+				case drawStep:
+					DrawMarquee(TRUE);
+					VMoveTo(anchorPosition.h,anchorPosition.v);
+					VLineTo(lastPosition.h,lastPosition.v);
+					break;
+				}
+				
+			break;
+			
+		case bREGPOLY_ROOM:
+			switch(state)
+				{
+				case drawMove:
+					#if WINDOWS
+					//On Windows, Dotted lines and solid lines draw on slightly different
+                    //pixels, so this hack is necessary to avoid pixel dribble
+					if(MarqueeIsOdd())
+					{
+						DrawMarquee(FALSE);
+						DrawRegPoly();
+					}
+                    #endif
+					DrawMarquee(TRUE);
+					DrawRegPoly();						
+					lastPosition = currentPosition;
+					lastAngle = angle;
+					DrawMarquee(TRUE);
+					DrawRegPoly();
+					break;
+					
+				case drawStay:
+					DrawMarquee(FALSE);
+					DrawRegPoly();
+					break;
+				
+				case drawStep:
+					DrawMarquee(TRUE);
+					DrawRegPoly();
+					break;
+					
+				case drawPush:
+					DrawMarquee(TRUE);
+					DrawRegPoly();
+					break;
+
+				case drawCancel:
+					DrawMarquee(TRUE);
+					DrawRegPoly();
+					break;
+				}
+			break;
+		}
+	UnsetPane(); // DAS-FIXPUSH 9/11/93
+	}
+
+void 
+CadDraft::TranslateObject(Point p,long  modifiers,short action) 
+	{
+	short	minMode;
+	
+	SetPane();	// DAS-FIXPUSH 9/11/93
+	switch(action)
+		{
+		case drawStay:
+        	/*this is a one step marching ants function*/
+			if(((CONSTRAIN|OPT_EDIT_MODE)&lastModifier) == ((CONSTRAIN|OPT_EDIT_MODE)&modifiers))
+				{
+				DrawMarquee(FALSE);
+				DoTranslate(lastModifier);
+				lastModifier = modifiers;
+				lastScale = currentScale;
+				lastPosition = p;
+				break;
+				}
+				
+		case drawMove:
+        	/*this is when the marching ants are moved*/
+			SearchPeers(p,modifiers,action);
+			/*erase the old one*/
+			#if WINDOWS
+			//On Windows, Dotted lines and solid lines draw on slightly different
+            //pixels, so this hack is necessary to avoid pixel dribble
+			if(MarqueeIsOdd())
+			{
+				DrawMarquee(FALSE);
+				DoTranslate(lastModifier);
+			}
+            #endif
+			DrawMarker();
+			DrawMarquee(TRUE);
+			DoTranslate(lastModifier);
+
+			lastAngle = angle;
+			lastScale = currentScale;
+			lastPosition = p;	
+			lastModifier = modifiers;
+            /*draw the new one*/
+			DrawMarker();
+			DrawMarquee(TRUE);
+			DoTranslate(lastModifier);			
+			break;
+			
+		case drawStep:
+        	/*this is the initialization of the marching ants*/
+			SearchPeers(currentPosition,modifiers,action);
+			DrawMarker();						
+			DrawMarquee(TRUE);
+			DoTranslate(modifiers);
+			lastModifier = modifiers;
+			lastScale = currentScale;
+// DAS-VWT&&VR-BUGFIX 9/11/93 if it is the initialization then don't move the damn point
+//			lastAngle = angle;
+//			lastPosition = p;	
+			break;
+			
+		case drawPush:
+			DrawMarker();						
+			DrawMarquee(TRUE);
+			DoTranslate(modifiers);
+			lastModifier = modifiers;
+			lastScale = currentScale;
+			lastAngle = angle;
+			lastPosition = p;	
+			break;
+
+		case drawCancel:
+			SearchPeers(p,modifiers,action);
+			switch(editTool)
+				{
+				case bROTATE_ROOM:	minMode =  modeNone; break;
+				case bSCALE_ROOM:	minMode =  modeNone; break;
+				default: minMode = modeWait; break;
+				}
+				
+			if(minMode < editMode)
+				{
+				DrawMarker();
+				DrawMarquee(TRUE);
+				if(DoTranslate(lastModifier) && editMode>modeWait)
+					UpdateObject(modifiers);
+				}
+			SetTrackMode(POSITION_TRACK);
+			break;
+		}
+	UnsetPane();// DAS-FIXPUSH 9/11/93
+	}
+
+void 
+CadDraft::SetTrackSet(int mode)
+	{	
+	TrackSet	trackSet;
+	
+	if(POSITION_TRACK == mode)
+		{
+		type = controller->GetType();
+		if( toolCRTLDesign == controller->GetType())
+			{
+			trackSet.length = 4;
+			if(TRACK_WORLD == trackMethod)
+				{
+				switch(environment->GetAxis())
+					{
+					case INFL_X: 
+						trackSet.item1 = trackYPos; 
+						trackSet.item2 = trackZPos; 
+						break;
+					case INFL_Y: 
+						trackSet.item1 = trackXPos; 
+						trackSet.item2 = trackZPos; 
+						break;
+					case INFL_Z: 
+						trackSet.item1 = trackXPos; 
+						trackSet.item2 = trackYPos; 
+						break;
+					}		
+				}
+			else
+				{
+				trackSet.item1 = trackHPos;
+				trackSet.item2 = trackVPos;
+				}
+			trackSet.item3 = trackFloor;
+			trackSet.item4 = trackDepth;
+			}
+		else
+			{
+			trackSet.length = 2;
+			if(TRACK_WORLD == trackMethod)
+				{
+				trackSet.item1 = trackXPos;
+				trackSet.item2 = trackYPos;
+				}
+			else
+				{
+				trackSet.item1 = trackHPos;
+				trackSet.item2 = trackVPos;
+				}
+			}
+		}
+	else
+		{
+		switch(editTool)
+			{				
+			case bHAND:  
+				if(TRACK_WORLD == trackMethod)
+					{
+					trackSet.length = 6;
+					trackSet.item1 = trackXPos;
+					trackSet.item2 = trackYPos;
+					trackSet.item3 = trackZPos;
+					trackSet.item4 = trackDXPos;
+					trackSet.item5 = trackDYPos;
+					trackSet.item6 = trackDZPos;
+					}
+				else
+					{
+					trackSet.length = 4;
+					trackSet.item1 = trackHPos;
+					trackSet.item2 = trackVPos;
+					trackSet.item3 = trackDHPos;
+					trackSet.item4 = trackDVPos;
+					}
+				break;
+						
+			case bARROW:
+			case bMEASURE_TOOL:
+			case bPLUS_MINUS:
+			case bSKEW_TOOL:
+			case bZOOMIN:		// MERGE-GOURAUD-PRO
+			case bZOOM_USER:
+			case bRECT_ROOM:
+			case bPOLY_ROOM:
+			case bREGPOLY_ROOM: 
+				trackSet.length = 6;
+				if(TRACK_WORLD == trackMethod)
+					{
+					switch(environment->GetAxis())
+						{
+						case INFL_X: 
+							trackSet.item1 = trackYPos; 
+							trackSet.item2 = trackZPos;
+							trackSet.item3 = trackDYPos; 
+							trackSet.item4 = trackDZPos;
+							break;
+						case INFL_Y: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackZPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDZPos;
+							break;
+						case INFL_Z: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackYPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDYPos;
+							break;
+						}
+					}
+				else
+					{
+					trackSet.item1 = trackHPos;
+					trackSet.item2 = trackVPos;
+					trackSet.item3 = trackDHPos;
+					trackSet.item4 = trackDVPos;
+					}
+				trackSet.item5 = trackLength;
+				trackSet.item6 = trackAngle;
+				break;
+				
+			case bCUT_ROOM: 
+				trackSet.length = 5;
+				if(TRACK_WORLD == trackMethod)
+					{
+					switch(environment->GetAxis())
+						{
+						case INFL_X: 
+							trackSet.item1 = trackYPos; 
+							trackSet.item2 = trackZPos; 
+							trackSet.item3 = trackDYPos; 
+							trackSet.item4 = trackDZPos; 
+							break;
+						case INFL_Y: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackZPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDZPos; 
+							break;
+						case INFL_Z: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackYPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDYPos; 
+						}		
+					}
+				else
+					{
+					trackSet.item1 = trackHPos;
+					trackSet.item2 = trackVPos;
+					trackSet.item3 = trackDHPos;
+					trackSet.item4 = trackDVPos;
+					}
+					
+				trackSet.item5 = trackAngle;
+				break;
+				
+			case bSCALE_ROOM:
+				trackSet.length = 6;
+				if(TRACK_WORLD == trackMethod)
+					{
+					switch(environment->GetAxis())
+						{
+						case INFL_X: 
+							trackSet.item1 = trackYPos; 
+							trackSet.item2 = trackZPos; 
+							trackSet.item3 = trackDYPos; 
+							trackSet.item4 = trackDZPos; 
+							trackSet.item5 = trackYScale;
+							trackSet.item6 = trackZScale;					
+							break;
+						case INFL_Y: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackZPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDZPos; 
+							trackSet.item5 = trackXScale;
+							trackSet.item6 = trackZScale;					
+							break;
+						case INFL_Z: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackYPos; 
+							trackSet.item3 = trackDXPos; 
+							trackSet.item4 = trackDYPos; 
+							trackSet.item5 = trackXScale;
+							trackSet.item6 = trackYScale;					
+						}		
+					}
+				else
+					{
+					trackSet.item1 = trackHPos;
+					trackSet.item2 = trackVPos;
+					trackSet.item3 = trackDHPos;
+					trackSet.item4 = trackDVPos;
+					trackSet.item5 = trackHScale;
+					trackSet.item6 = trackVScale;					
+					}
+				
+				break;
+				
+			case bROTATE_ROOM: 
+				trackSet.length = 3;
+				if(TRACK_WORLD == trackMethod)
+					{
+					switch(environment->GetAxis())
+						{
+						case INFL_X: 
+							trackSet.item1 = trackYPos; 
+							trackSet.item2 = trackZPos; 
+							break;
+						case INFL_Y: 
+							trackSet.item1 = trackXPos; 
+							trackSet.item2 = trackZPos; 
+							break;
+						case INFL_Z: 
+							trackSet.item1 = trackXPos;
+							trackSet.item2 = trackYPos;
+							break;				
+						}		
+					}
+				else
+					{
+					trackSet.item1 = trackHPos;
+					trackSet.item2 = trackVPos;
+					}				
+				trackSet.item3 = trackAngle;
+				break;			
+	
+			default:
+				trackSet.length = 2;
+				trackSet.item1 = trackHPos;
+				trackSet.item2 = trackVPos;
+				break;
+			}
+		}
+		
+	pcc(controller)->SetTrackSet(&trackSet);		
+//	SetPane(); // what the hell is this doing here? DAS 9/9/93
+	}
+	
+void 
+CadDraft::SetTrackMode(int mode)
+	{	
+	PointFFixed pt;
+	switch(mode)
+		{
+		case POSITION_TRACK:
+			tempPoints->SetLength(0);
+			tempFFPoints->SetLength(0);
+			editMode = modeNone;
+			editList->SetLength(0);
+			lastAngle = FFZero;	
+			lastModifier = 0L;			
+			break;
+		
+		case POSITION_EDIT:
+/*
+			worldAnchor = environment->MakeVector(TO_WORLD,Local2World(anchorPosition,SCALE_ABSOLUTE));
+*/
+			if(bSCALE_ROOM == editTool)
+				{
+				tempFFPoints->Get(1,&pt);
+				worldScaleMult = environment->MakeVector(TO_WORLD,pt);
+				}
+			tempFFPoints->Get(0,&pt);
+			worldAnchor = environment->MakeVector(TO_WORLD,pt);
+			if(bPOLY_ROOM != editTool)
+				lastPosition = anchorPosition;
+			switch(editTool)
+				{
+				case bROTATE_ROOM:	anchorAngle = lastAngle = angle = FFZero; break;
+				default: anchorAngle = lastAngle = angle; break;
+				}
+			
+			break;
+		}
+
+	SetTrackSet(mode);
+	}
+	
+void	
+CadDraft::MakeWorldRect(Rect *r,int top,int left,int bottom,int right)
+	{
+	Point p;
+	PointFFixed	result;
+	
+	p.h = left; p.v = top;
+	result = Local2World(p,SCALE_ABSOLUTE);
+	r->top = FFRound(result.v);
+	r->left = FFRound(result.h);
+	
+	p.h = right; p.v = bottom;
+	result = Local2World(p,SCALE_ABSOLUTE);
+	r->bottom = FFRound(result.v);
+	r->right = FFRound(result.h);
+	}
+
+void 
+CadDraft::BuildRect()
+	{
+	PointFFixed	pt0,pt1,pt2,pt3;
+	
+	tempFFPoints->Get(0,&pt0);
+	tempFFPoints->Get(1,&pt2);
+	pt1.h = pt0.h;
+	pt1.v = pt2.v;
+	pt3.h = pt2.h;
+	pt3.v = pt0.v;
+	
+	tempFFPoints->SetLength(4);
+	tempFFPoints->Put(0,&pt0);
+	tempFFPoints->Put(1,&pt1);
+	tempFFPoints->Put(2,&pt2);
+	tempFFPoints->Put(3,&pt3);	
+	}					
+
+void 
+CadDraft::BuildRegular()
+	{
+	PointFFixed	end,center,pt;
+	double 	radius,dh,dv;
+	int 	i,nSides;
+	double	dangle,angl;
+
+	tempFFPoints->Get(0,&center);
+	tempFFPoints->Get(1,&end);
+	
+	nSides = pcc(controller)->GetNumSides();
+	
+/*
+	angl = FixedToDbl(ConvertAngle(lastAngle));
+*/
+	dh = FixedToDbl(FFSub(end.h,center.h));
+	dv = FixedToDbl(FFSub(end.v,center.v));
+    if(dh==0 && dv==0)angl=0;
+	else angl = atan2(dv,dh);
+
+	dangle = PI2/nSides;
+		
+	
+	radius = sqrt(dh*dh+dv*dv);
+	
+	tempFFPoints->SetLength(0);
+	for(i=0;i<nSides;i++)
+		{
+		pt.h=DblToFixed(radius*cos(angl));
+		pt.v=DblToFixed(radius*sin(angl));
+		pt.h=FFAdd(center.h,pt.h);
+		pt.v=FFAdd(center.v,pt.v);
+		tempFFPoints->Append(&pt);
+		angl+=dangle;
+		}	
+	}					
+
+void 
+CadDraft::DrawRegPoly() 
+	{
+	V_Array *pp;
+	Point	*p,tp;
+	long	xx,yy;
+	int i,length,rad;
+			
+	tp.h = anchorPosition.h - lastPosition.h;
+	tp.v = anchorPosition.v - lastPosition.v;
+	xx = (long)tp.h * tp.h;
+	yy = (long)tp.v * tp.v;
+	rad = LSqrt(xx + yy);
+ 	pp = RegularPoly(pcc(controller)->GetNumSides(),anchorPosition,rad,FFRound(lastAngle));
+	length = pp->ALength();
+	p = (Point*)pp->Use();
+	VMoveTo(p[length-1].h,p[length-1].v);
+	for(i = 0; i < length; i++,p++)
+		VLineTo(p->h,p->v);
+	
+	pp->Unuse();
+	pp->dArray();
+	}
+
+void 
+CadDraft::SetLastPoint(int flag)
+	{
+	if(flag)
+		{
+		lastPosition.h = centerX;
+		lastPosition.v = centerY;
+		}
+	}
+int  
+CadDraft::IO(V_Buffer *buffer)
+	{
+	int		err;	
+	err = FALSE;
+	if(err = buffer->IOType(&displayFlags,IO_CHAR)) return(err);
+	if(err = buffer->IOData(&gridColor,(long)sizeof(RGBColor))) return(err);
+	err = Draft::IO(buffer);
+	return(err);
+	}			
+
+int
+CadDraft::TakeSnapShot(V_Buffer *buffer,int snapShotFormat)
+	{
+	AppPreference *appPref;
+	TranslatorPreference	*transPref;
+	Rect	r;
+	Point p;
+	V_Picture *pict;
+	BMPWriter	*bmp;
+#if VWT && !SPECIAL_EDITION			// merge SE, vrmadness		// GJR 7/4/95
+/* jca 17 Sept 93.  Not in VR { */
+	EPSBase *epsf;
+	TIFFWriter *tiff;
+#endif // VWT.  jva 17 Sept 93 }
+    V_Offscreen *imageScreen;
+	int	err;
+	
+	err = 0;
+	appPref = controller->GetPreference();
+	transPref = (TranslatorPreference*)appPref->GetPreference(preferTranslator);
+	
+	if(transPref->screenSize==screenCustom)
+		r = transPref->outputRect;
+	else 
+		{
+		ScreenSize(transPref->screenSize,&p,theWindow);
+		r.left = r.top = 0;
+		r.right = p.h;
+		r.bottom = p.v;
+		}
+	
+	switch(snapShotFormat)
+		{
+		case formatPICT:
+			pict=new(V_Picture);
+			pict->cPicture(transPref->bitmapFlag);
+			pict->SetDepth(transPref->outputColorDepth);
+			pict->PutRect(&r);
+			VOutput(pict);
+							
+			pict->IOPictFile(buffer);
+			pict->dPicture();
+			break;
+			
+		case formatBMP:
+			bmp = new(BMPWriter);
+            imageScreen = new(V_Offscreen);
+			imageScreen->cOffscreen(&r, 8, NULL,NULL);
+			imageScreen->SetDisplayType(DISPLAY_PICT);// DAS-VWINDOWS 10/9/93
+
+			bmp->cBMPWriter(buffer, imageScreen);
+			bmp->DrawImage(this);
+			bmp->WriteImage(transPref);
+			
+			bmp->dBMPWriter();
+			imageScreen->dOffscreen();
+
+			break;
+
+#if VWT && !SPECIAL_EDITION         	// merge SE, vrmadness		// GJR 7/4/95
+/* jca 17 Sept 93.  Not in VR { */
+		case formatTIFF:
+			tiff = new(TIFFWriter);
+			imageScreen = new(V_Offscreen);
+			imageScreen->cOffscreen(&r, 8, NULL,NULL);
+			imageScreen->SetDisplayType(DISPLAY_PICT);
+		
+			tiff->cTIFFWriter(buffer, imageScreen);
+			
+			tiff->DrawImage(this);
+			tiff->WriteImage(transPref);
+			
+			tiff->dTIFFWriter();
+			imageScreen->dOffscreen();
+			break;
+
+		case formatEPS:
+		case formatIllustrator:
+			switch(snapShotFormat)
+		    	{
+		    	case formatEPS:
+		    		epsf=new(EPSF);
+					epsf->cEPSBase(buffer);
+		    		break;
+				case formatIllustrator:
+		    	default:
+		    		epsf=new(EPSF_Adobe1_1);
+					epsf->cEPSBase(buffer);
+		    		break;
+				}
+			// some day we may need to turn off texturing here.  jca
+			// see walkpane.cp
+
+			epsf->SetDepth(transPref->EPSColorFlag ? depth : 0);
+			if (transPref->EPSFDevice==EPSForThePC)	/* the machine code is stored here */
+				epsf->SetPCFlags();
+			else /*if (transPref->EPSFDevice==EPSForTheMac)*/
+				epsf->SetMacFlags();
+
+			if (transPref->EPSPreviewFlag == TRUE)
+				epsf->SetPreviewFlag(TRUE);
+
+			epsf->PutRect(&r);
+			epsf->MakeHeader();
+			err = VOutput(epsf);
+						
+			if(!err)epsf->MakeFooter();
+				
+		
+			if((!err) && (transPref->EPSPreviewFlag == TRUE))
+				{
+				switch (transPref->EPSFDevice)	/* stores the machine type */
+					{
+					case EPSForTheMac:
+						((V_File *)buffer)->OpenResource(FALSE);
+						pict=new(V_Picture);
+						pict->cPicture(FALSE);
+						pict->PutRect(&r);
+						pict->SetDepth(transPref->EPSColorFlag ? depth : 0);
+						err = VOutput(pict);
+						if(!err)err = pict->IOResource((V_File*)buffer,256,NULL);
+						pict->dPicture();
+						((V_File *)buffer)->CloseResource();
+						break;
+					case EPSForThePC:
+						tiff = new(TIFFWriter);
+						imageScreen = new(V_Offscreen);
+						imageScreen->cOffscreen(&r, 8, NULL,NULL);
+						imageScreen->SetDisplayType(PICT_DRAW);
+			
+						tiff->cTIFFWriter(buffer, imageScreen);
+						tiff->WriteIntel();
+						
+						tiff->DrawImage(this);
+						tiff->WriteImage(transPref);
+									
+						tiff->dTIFFWriter();
+						imageScreen->dOffscreen();
+                  	  	break;
+					}
+                }
+			if (!err) epsf->UpdateHeader();
+			epsf->dEPSBase();
+			break;
+#endif // VWT.  jca 17 Sept 93 }
+		}
+	
+	return(err);
+	}	
+
+
+int  CadDraft::EditBuffer(long action,long modifiers)
+{
+return(noErr);   // jca 25MAR94 not TRUE/FALSE, but 0 if no errors
+}
+
+// MERGE-GOURAUD-PRO-3 [[[
+void 
+CadDraft::Nudge(char direction,long modifiers) 		// ABD
+{
+}	
+
+#if 0
+void 
+CadDraft::Nudge(char direction,long modifiers) 
+	{
+	Point	oldLastPt,oldAnchorPt,oldRealPt;
+	int		oldEditTool,oldEditMode;
+	
+	oldRealPt = currentPositionR;
+	oldAnchorPt = anchorPosition;
+	oldLastPt = lastPosition;
+	oldEditTool = editTool;
+	oldEditMode = editMode;
+	
+	currentPositionR.h = centerX;
+	currentPositionR.v = centerY;	
+	lastPosition = anchorPosition = currentPositionR;
+	
+	selectedList->CopyArray(editList);
+	
+	switch(direction)
+		{
+		case V_LEFTARROW: 	lastPosition.h--; break;
+		case V_RIGHTARROW: 	lastPosition.h++; break;
+		case V_UPARROW: 	lastPosition.v--; break;
+		case V_DOWNARROW: 	lastPosition.v++; break;
+		}
+#if VR  //
+	editTool = bARROWTOOL;
+#elif VWT
+	editTool = bARROW;
+#endif
+
+	editMode = modeTranslate; 
+	
+	UpdateObject(modifiers);
+	
+	editList->SetLength(0);
+
+	editMode = oldEditMode; 
+	editTool = oldEditTool;
+	currentPositionR = oldRealPt;
+	anchorPosition = oldAnchorPt;
+	lastPosition = oldLastPt;
+	}
+#endif	
+// MERGE-GOURAUD-PRO-3 ]]]
+
+
+// jca 23MAR94 is there anything in the selectedList?  if so, return
+// TRUE.  This is so the Edit menu can have things greyed out when there's
+// nothing to copy, paste, or duplicate.
+int
+CadDraft::IsAnythingSelected(void)
+{
+	if (selectedList)
+		{
+		return((selectedList->ALength() > 0)? TRUE : FALSE);
+		}
+	else
+		return(0);
+}
+
+// jca 24MAR94  SelectedConditions checks the condition of the selected
+// items.  We want to know (for the menus) if any selected item is
+// {opaque, translucent, transparent}, {straight, rounded, pointed},
+// extruded, {single,double extrusion}, regular polyhedron, rotated,
+// scaled, or skewed.  If a thing is true, set a bit flag
+ULong
+CadDraft::SelectedConditions(void)
+{
+	ULong conditions = 0L;
+
+	if (IsAnythingSelected())
+		{
+		CAVPolyhedron **cavPolyList;
+        UShort opacity;
+        int i, extrusion;
+
+		cavPolyList = (CAVPolyhedron **)selectedList->Use();
+		for (i = 0; i < selectedList->ALength(); i++)
+			{
+			opacity = cavPolyList[i]->GetOpacity();
+			extrusion = cavPolyList[i]->GetExtrusionType();
+
+			if (cavPolyList[i]->IsPolySkewed())			conditions |= SELECTED_SKEWED;
+			if (cavPolyList[i]->IsPolyScaled())			conditions |= SELECTED_SCALED;
+			if (cavPolyList[i]->IsPolyRotated())		conditions |= SELECTED_ROTATED;
+			if (cavPolyList[i]->CanLevelsBeChanged())	conditions |= SELECTED_LEVELS;
+			if (cavPolyList[i]->CanSidesBeChanged())	conditions |= SELECTED_SIDES;
+			if (cavPolyList[i]->IsPolyStraight())	conditions |= SELECTED_STRAIGHT;
+			if (cavPolyList[i]->IsPolyPointed())	conditions |= SELECTED_POINTED;
+			if (cavPolyList[i]->IsPolyRounded())	conditions |= SELECTED_ROUNDED;
+
+			if (IS_OPAQUE(opacity)) 				conditions |= SELECTED_OPAQUE;
+			else if (IS_TRANSLUCENT(opacity))  	conditions |= SELECTED_TRANSLUCENT;
+			else /* if (IS_TRANSPARENT(opacity))*/	conditions |= SELECTED_TRANSPARENT;
+
+			if (extrusion == 1)					conditions |= SELECTED_SINGLE;
+			else if (extrusion == 2) 			conditions |= SELECTED_DOUBLE;
+
+			if (cavPolyList[i]->IsPolyGrouped())	conditions |= SELECTED_GROUP;
+			}
+
+		if (selectedList->ALength() > 1)	conditions |= SELECTED_CAN_GROUP;
+
+		selectedList->Unuse();
+		}
+
+	return(conditions);
+}
+
+/*=========================================================================
+*-------------------------------------------------------------------------*/
+void CadDraft::ChangeColor(RGBColor *color){}
+void CadDraft::ChangeTexture(struct TextureItem *tex_item){}  	/* ABD WILLIAMS MERGE-TEXTURE 9/13/93 */
+void CadDraft::SetTexture(struct TextureItem *tex_item) {}	/* ABD WILLIAMS MERGE-TEXTURE 9/13/93 */
+void CadDraft::SetShadeType(unsigned char sh) {}			/* ABD MERGE-GOURAUD */
+int  CadDraft::Select(void *ply,V_Array *list,long modifiers) { return(0); }
+int  CadDraft::ReSelect(Point p,long modifiers)  { lastPosition = p; return OUT_POLY;}
+int  CadDraft::InSelectedList(Point p,long modifiers)  { lastPosition = p; return OUT_POLY; }
+void CadDraft::EditPoint(Point p,long modifiers) {}
+void CadDraft::CreateObject(Point p,long modifiers)  { }
+int CadDraft::DoTranslate(long modifiers) { return(TRUE);}	
+void CadDraft::UpdateObject(long modifiers) {}
+void CadDraft::Grouping(int state) {}
+void CadDraft::SelectRect(Rect *r,long modifiers) {}
+void CadDraft::SearchPeers(Point p,long modifiers,int type) {}
+void CadDraft::SetColor(RGBColor color) {}
+void CadDraft::SelectAll(int state)  { }
+void CadDraft::SetPosition(int who,double	where) { }
+void CadDraft::SetOpacity(int opc) {}
+void CadDraft::SetSides(int numSides,int editType) {}
+void CadDraft::Hand(Point p, long modifiers, int eventType) { DoHand(p); }
+void CadDraft::LaunchEditor() { SetTrackMode(POSITION_TRACK); }
+int  CadDraft::IO_OBJECT(V_Buffer *buffer) { return(noErr); }
+void CadDraft::UnPosition(int type) {}
+void CadDraft::SetEditState(int type,long modifiers,int dir) {}
+int CadDraft::EditLayer(LayerItem *lyr,int type) { return(FALSE); }
+PointFFixed 
+CadDraft::ObjectCenter(FFixed *dpth) 
+	{ 
+	PointFFixed pt;
+	Point p;
+	p.h = centerX;p.v = centerY;
+	pt = Local2World(p,SCALE_ABSOLUTE);
+	*dpth = FFZero;
+	return(pt);
+	}
+
+void
+MenuCad::ctheMenu()
+	{
+	/* DUDE THIS IS HOW IT SHOOULD BE DONE !!! */
+/* DUDE cMenu(TXT_EMPTYSTRING);*/
+	Append(TXTM_AUTOGRIDST);
+	Append(TXTM_MAGNIFY);	
+	Append(TXTM_MINIFY);	
+	SetPriority(averagePriority);
+	SetKey(menuMagnify,menuMagnifyKey);
+	SetKey(menuMinify,menuMinifyKey);
+
+	#if GERMAN
+	  SetKeyPos(menuMinify,menuMinifyKeyPos);
+	#elif SPANISH
+   	  SetKeyPos(menuMagnify,menuMagnifyKeyPos);
+	  SetKeyPos(menuMinify,menuMinifyKeyPos);
+	#else // English default
+	  SetKeyPos(menuMagnify,menuMagnifyKeyPos);
+	  SetKeyPos(menuMinify,menuMinifyKeyPos);
+	#endif // GERMAN
+
+	SetEuroKey(menuSnapToGrid, menuSnapToGridEuroKey);
+	SetEuroKey(menuMagnify, menuMagnifyEuroKey);
+	SetEuroKey(menuMinify, menuMinifyEuroKey);
+	}
+
+void
+MenuCad::SetController(Controller *ctrl)
+	{
+	controller = ctrl;
+	}
+
+void
+MenuCad::Preempt()
+	{
+	AppPreference	*prefs;
+	EditorPreference	*editPrefs;
+	int state;
+	
+	prefs = controller->GetPreference();
+	editPrefs = (EditorPreference*)prefs->GetPreference(preferEditor);
+	state = RULER_SNAP&editPrefs->editorState ? TRUE : FALSE;
+	Select(menuSnapToGrid,state);
+	}
+	
+void
+MenuCad::Action(int num, long modifier)
+	{
+	AppPreference	*prefs;
+	EditorPreference	*editPrefs;
+	int state;
+	
+	switch (num)
+		{
+		case menuSnapToGrid:
+			prefs = controller->GetPreference();
+			editPrefs = (EditorPreference*)prefs->GetPreference(preferEditor);
+			state = RULER_SNAP&editPrefs->editorState ? FALSE : TRUE;
+			if(state)editPrefs->editorState|=RULER_SNAP; 
+			else editPrefs->editorState&=~RULER_SNAP;
+			editPrefs->SetChange(TRUE);
+			controller->Request(NULL,msgEdit,objPreference,0);
+			editPrefs->SetChange(FALSE);
+			break;
+		case menuMagnify: if(!(modifier&V_SHIFT)) { controller->Request(NULL,objTools,bZOOM_UP,0); break; }
+		case menuMinify: controller->Request(NULL,objTools,bZOOM_BACK,0); break;
+		}
+	}
+
+#if VWT
+// { DAS-VR-VRTOOLS 8/15/93 we won't be needing this for VR.
+void 
+EmptyPane::SetController(Controller *ctrl) 
+	{
+	controller = ctrl;
+	}
+	
+void 
+EmptyPane::CalcSize(Rect *r,Point *p,int type,int warning)
+	{
+	controller->GetPlace(r,warning,toolPEmpty);
+	}
+	
+void 
+EmptyPane::Display(int type, int x, int y) 
+	{
+	Rect r;
+	r= dataRect;
+	VEraseRect(&r);
+	}
+// } DAS-VR-VRTOOLS 8/15/93 we won't be needing this for VR.
+#endif
+
+
+#if VPRO
+void 
+BlankPane::SetController(Controller *ctrl) 
+	{
+	controller = ctrl;
+	}
+	
+void 
+BlankPane::CalcSize(Rect *r,Point *p,int type,int warning)
+{
+	// do nothing -- return r unchanged
+}
+	
+void 
+BlankPane::Display(int type, int x, int y) 
+{
+	Rect r;
+	r= dataRect;
+	VEraseRect(&r);
+}   
+#endif //VPRO
