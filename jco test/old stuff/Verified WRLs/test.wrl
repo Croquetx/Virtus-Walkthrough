@@ -1,0 +1,10 @@
+#VRML V1.0 ascii
+
+
+DEF Root Separator {
+    Cone {
+		parts   ALL
+		bottomRadius    1
+		height  3
+    }
+}

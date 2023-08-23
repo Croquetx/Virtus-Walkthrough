@@ -1,0 +1,1 @@
+#ifndef BLURBS_H#define BLURBS_H#if MACINTOSHint Blurb(Handle);#else // WINDOWSvoid Blurb(HWND);#endif#endif // BLURBS_H

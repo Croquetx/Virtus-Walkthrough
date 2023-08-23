@@ -1,0 +1,1 @@
+#ifndef WORLDDLLINCL#define WORLDDLLINCLvoid InitDLLToMoveObserver();void EndDLLToMoveObserver();void DLLMainEventLoopEntry();void DLLGetObserver(struct Point3DFFixed *, struct Angle3DFFixed *);#endif //WORLDDLLINCL

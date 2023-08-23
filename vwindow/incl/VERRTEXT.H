@@ -1,0 +1,1 @@
+#ifndef V_ERRTEXT#define V_ERRTEXT#endif // V_ERRTEXT

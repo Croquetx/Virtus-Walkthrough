@@ -1,0 +1,1 @@
+#ifndef LONGDRAWPICT#define LONGDRAWPICT#include "VTypes.h"typedef struct RectLong {    long top;    long left;    long bottom;    long right;} RectLong;#if MACINTOSHvoid LongDrawPicture(struct V_Picture *pict, RectLong *to);#elif WINDOWSvoid LongDrawPicture(struct V_Offscreen *pict, RectLong *to);#endif#endif //LONGDRAWPICT

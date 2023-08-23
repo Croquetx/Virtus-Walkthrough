@@ -1,0 +1,1 @@
+struct VDrag:indirect{	Rect rect;	struct V_Pane *basePane;		void cVDrag(Rect *r, struct V_Pane *);	void dVDrag(void);	void Drag(void);	virtual void DisplayDrag(Rect *r);	};

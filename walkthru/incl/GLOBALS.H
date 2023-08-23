@@ -1,0 +1,1 @@
+int GetGlobal(int, int);void SetGlobal(int, int, int);void SaveGlobal(int);void LoadGlobals(void);extern int soundOn;extern int colorButton;extern int dither;extern int warnLevel;extern int metric;

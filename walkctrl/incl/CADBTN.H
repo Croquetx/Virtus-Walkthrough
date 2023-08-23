@@ -1,0 +1,1 @@
+#ifndef CAD_BUTTON#define CAD_BUTTON#include "Button.h"struct CadButton:ToolButton{	void cButtonSet(void);	void MouseDown(int,long);	};struct SelectButton:ToolButton{	void cButtonSet(void);	};#endif //CAD_BUTTON

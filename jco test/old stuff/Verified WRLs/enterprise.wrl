@@ -1,0 +1,677 @@
+#VRML V1.0 ascii
+
+Separator {
+    Group {
+	Separator {
+	    Transform {
+		translation	0 0 0
+		rotation	0 0 1  0
+		scaleFactor	1 1 1
+		scaleOrientation	0 0 1  0
+		center	-0.12169 -0.0237795 -0.0671744
+	    }
+	    Separator {
+		Separator {
+			WWWAnchor { name "http://www.ts.umu.edu/~Itcinge/Scandia"
+			Separator {
+		    Group {
+			Info {
+			}
+			Separator {
+			    Transform {
+				translation	-0.0115605 -0.00145025 0.0622631
+				rotation	-1 4.47035e-07 -4.47035e-07  1.5708
+				scaleFactor	1 0.999997 0.999997
+				scaleOrientation	-1 -4.19758e-07 -4.38549e-07  1.5708
+				center	0 0 0
+			    }
+			    Separator {
+				Group {
+				    Info {
+					string	"solid"
+				    }
+				    Material {
+					ambientColor	0.00746438 0.00673081 0.00690282
+					diffuseColor	0.0291577 0.0262922 0.0269642
+					specularColor	0.938776 0.0550317 0.0550317
+					emissiveColor	0 0 0
+					shininess	0.0612245
+					transparency	0
+				    }
+				}
+				Sphere {
+				    radius	0.0177045
+				}
+				Separator {
+				}
+			    }
+			}
+		    }}}
+		    Group {
+			Info {
+			}
+			Separator {
+			    Transform {
+				translation	-0.00765831 -0.0027364 -0.187503
+				rotation	-1 5.36444e-07 -5.36443e-07  1.57079
+				scaleFactor	1 1 1
+				scaleOrientation	-1 -2.57081e-08 -7.57491e-07  2.35619
+				center	0 0 0
+			    }
+			    Separator {
+				Separator {
+			WWWAnchor { name "http://deepthought.armory.com/~bsc"
+			Group {
+				    Info {
+					string	"solid"
+				    }
+				    Material {
+					ambientColor	0.00746438 0.00673081 0.00690282
+					diffuseColor	0.0291577 0.0262922 0.0269642
+					specularColor	0.938776 0.0550317 0.0550317
+					emissiveColor	0 0 0
+					shininess	0.0612245
+					transparency	0
+				    }
+				}
+				Sphere {
+				    radius	0.0177045
+				}
+				Separator {
+				}
+			    }
+			}
+		    }}}
+		    Group {
+			Separator {
+			    Transform {
+				translation	-0.0831814 0.00627786 8.19564e-08
+				rotation	0 0 1  0
+				scaleFactor	1 0.999999 0.999999
+				scaleOrientation	0 0 1  0
+				center	-0.187592 0.0420365 -0.0671745
+			    }
+			    Separator {
+				Separator {
+				    Group {
+					Info {
+					}
+					Separator {
+					    Separator {
+			WWWAnchor { name "http://www-iwi.unisg.ch/~sambucci/scifi/startrek/st-www.html"
+			Transform {
+						translation	-0.190325 0.0538187 -0.0627937
+						rotation	0 0 1  0
+						scaleFactor	1.38977 1 1.3052
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.00746438 0.00673081 0.00690282
+							diffuseColor	0.0291577 0.0262922 0.0269642
+							specularColor	0.641609 0.976208 0.979592
+							emissiveColor	0 0 0
+							shininess	0.0612245
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.0253423
+						}
+						Separator {
+						}
+					    }
+					}
+				    }}}
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	-0.187731 0.0398037 -0.060481
+						rotation	0 0 1  0
+						scaleFactor	1 1 1
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.00714286 0.00169011 0
+							diffuseColor	0.314286 0.0743647 0
+							specularColor	0.760204 0.582954 0
+							emissiveColor	0 0 0
+							shininess	0.0408163
+							transparency	0
+						    }
+						}
+						Cylinder {
+						    radius	0.0683453
+						    height	0.0289949
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				    Group {
+					Separator {
+					    Transform {
+						translation	-0.187592 0.0273249 -0.0671745
+						rotation	0 0 1  0
+						scaleFactor	2.24359 0.191103 1.57276
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.0397589 0.038631 0.0388459
+							diffuseColor	0.155308 0.150902 0.151742
+							specularColor	0.528268 0.524391 0.524455
+							emissiveColor	0 0 0
+							shininess	0.102041
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.117281
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		    Group {
+			Separator {
+			    Transform {
+				translation	-0.274597 0.0105581 -0.0608011
+				rotation	0 0 1  0
+				scaleFactor	0.999999 0.703929 0.999999
+				scaleOrientation	0 0 1  0
+				center	0 0 0
+			    }
+			    Separator {
+				Group {
+				    Info {
+					string	"solid"
+				    }
+				    Material {
+					ambientColor	0.23125 0.23125 0.23125
+					diffuseColor	0.2775 0.2775 0.2775
+					specularColor	0.773911 0.773911 0.773911
+					emissiveColor	0 0 0
+					shininess	0.7
+					transparency	0
+				    }
+				}
+				Sphere {
+				    radius	0.0449998
+				}
+				Separator {
+				}
+			    }
+			}
+		    }
+		    Group {
+			Info {
+			}
+			Separator {
+			    Separator {
+			WWWAnchor { name "http://voyager.paramount.com/VoyagerIntro.html"
+			Transform {
+				translation	-0.142899 -0.0361732 -0.0637115
+				rotation	-0.301282 0.953313 0.0205829  3.01912
+				scaleFactor	0.855109 1.07792 0.305597
+				scaleOrientation	0 0 1  0
+				center	0 0 0
+			    }
+			    Separator {
+				Group {
+				    Info {
+					string	"solid"
+				    }
+				    Material {
+					ambientColor	0 0 0.0106351
+					diffuseColor	0 0 0.0425405
+					specularColor	0.632653 0.627312 0.609747
+					emissiveColor	0 0 0
+					shininess	0.0561224
+					transparency	0
+				    }
+				}
+				Cylinder {
+				    radius	0.0358271
+				    height	0.1451
+				}
+				Separator {
+				}
+			    }
+			}
+		    }}}
+		    Group {
+			Separator {
+			    Transform {
+				translation	0 -1.11759e-08 0.00352529
+				rotation	0 0 1  0
+				scaleFactor	1 1 1
+				scaleOrientation	0 -1 0  0.392699
+				center	0.0514636 -0.0522778 -0.065054
+			    }
+			    Separator {
+				Separator {
+				    Group {
+					Separator {
+					    Transform {
+						translation	0.0774333 0.0180077 -1.78814e-07
+						rotation	0 0 1  0
+						scaleFactor	1 0.999999 1
+						scaleOrientation	0 0 1  0
+						center	0.060905 -0.0209012 -0.189961
+					    }
+					    Separator {
+						Separator {
+						    Group {
+							Info {
+							}
+							Separator {
+							    Transform {
+								translation	0.113237 -0.0209012 -0.21092
+								rotation	-0.577351 0.577351 0.577349  2.0944
+								scaleFactor	0.999997 1 0.999998
+								scaleOrientation	0.165469 0.298299 -0.94002  0.773382
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.00746438 0.00673081 0.00690282
+									diffuseColor	0.0291577 0.0262922 0.0269642
+									specularColor	0.641609 0.976208 0.979592
+									emissiveColor	0 0 0
+									shininess	0.0612245
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.00723944
+								    height	0.186359
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						    Group {
+							Separator {
+							    Transform {
+								translation	0.0609049 -0.0209012 -0.190902
+								rotation	-0.57735 0.57735 0.57735  2.0944
+								scaleFactor	1 0.825878 0.999999
+								scaleOrientation	-3.01962e-06 -1 5.79969e-05  0.170998
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.0397589 0.038631 0.0388459
+									diffuseColor	0.155308 0.150902 0.151742
+									specularColor	0.528268 0.524391 0.524455
+									emissiveColor	0 0 0
+									shininess	0.102041
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.0205893
+								    height	0.354045
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						    Group {
+							Separator {
+							    Transform {
+								translation	0.113259 -0.0209012 -0.169002
+								rotation	-0.57735 0.577351 0.57735  2.0944
+								scaleFactor	0.999998 1 0.999999
+								scaleOrientation	0.0594024 0.12206 -0.990744  0.791734
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.00746438 0.00673081 0.00690282
+									diffuseColor	0.0291577 0.0262922 0.0269642
+									specularColor	0.641609 0.976208 0.979592
+									emissiveColor	0 0 0
+									shininess	0.0612245
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.00723944
+								    height	0.186359
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	0.281485 -0.00247712 -0.190966
+						rotation	-2.08039e-07 1 -2.67295e-07  1.5708
+						scaleFactor	1.63901 1.69477 0.999998
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.00746438 0.00673081 0.00690282
+							diffuseColor	0.0291577 0.0262922 0.0269642
+							specularColor	0.641609 0.651044 0.979592
+							emissiveColor	0 0 0
+							shininess	0.0612245
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.00903808
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	-0.00289312 -0.0534248 -0.121955
+						rotation	-0.805988 -0.166008 0.568177  2.60188
+						scaleFactor	1.20984 0.142158 0.247594
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.0397589 0.038631 0.0388459
+							diffuseColor	0.155308 0.150902 0.151742
+							specularColor	0.528268 0.524391 0.524455
+							emissiveColor	0 0 0
+							shininess	0.102041
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.0849391
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	0.279355 -0.00213307 0.0587575
+						rotation	7.26661e-07 1 -4.99358e-07  1.5708
+						scaleFactor	1.639 1.69477 1.20994
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.00746438 0.00673081 0.00690282
+							diffuseColor	0.0291577 0.0262922 0.0269642
+							specularColor	0.641609 0.651044 0.979592
+							emissiveColor	0 0 0
+							shininess	0.0612245
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.00903808
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				    Group {
+					Separator {
+					    Transform {
+						translation	0.0774333 0.0180077 -1.86265e-07
+						rotation	0 0 1  0
+						scaleFactor	1 0.999999 1
+						scaleOrientation	0 0 1  0
+						center	0.0572691 -0.0195269 0.0598535
+					    }
+					    Separator {
+						Separator {
+						    Group {
+							Info {
+							}
+							Separator {
+							    Transform {
+								translation	0.109601 -0.0195268 0.0388945
+								rotation	-0.57735 0.577351 0.57735  2.0944
+								scaleFactor	0.999996 1 0.999998
+								scaleOrientation	-0.0957174 -0.0879814 -0.991513  0.70373
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.00746438 0.00673081 0.00690282
+									diffuseColor	0.0291577 0.0262922 0.0269642
+									specularColor	0.641609 0.976208 0.979592
+									emissiveColor	0 0 0
+									shininess	0.0612245
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.00723944
+								    height	0.186359
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						    Group {
+							Separator {
+							    Transform {
+								translation	0.0572691 -0.0195269 0.0589124
+								rotation	-0.577349 0.577351 0.577351  2.0944
+								scaleFactor	0.999999 0.825876 0.999999
+								scaleOrientation	-1.52033e-05 1 5.3612e-05  0.167092
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.0397589 0.038631 0.0388459
+									diffuseColor	0.155308 0.150902 0.151742
+									specularColor	0.528268 0.524391 0.524455
+									emissiveColor	0 0 0
+									shininess	0.102041
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.0205893
+								    height	0.354045
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						    Group {
+							Separator {
+							    Transform {
+								translation	0.109623 -0.0195269 0.0808124
+								rotation	-0.57735 0.577351 0.57735  2.0944
+								scaleFactor	0.999997 1 0.999998
+								scaleOrientation	-0.157919 -0.116281 -0.980582  0.7898
+								center	0 0 0
+							    }
+							    Separator {
+								Group {
+								    Info {
+									string	"solid"
+								    }
+								    Material {
+									ambientColor	0.00746438 0.00673081 0.00690282
+									diffuseColor	0.0291577 0.0262922 0.0269642
+									specularColor	0.641609 0.976208 0.979592
+									emissiveColor	0 0 0
+									shininess	0.0612245
+									transparency	0
+								    }
+								}
+								Cylinder {
+								    radius	0.00723944
+								    height	0.186359
+								}
+								Separator {
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	0.00347627 -0.0522777 -0.0119679
+						rotation	0.596672 -0.369777 -0.712213  2.88673
+						scaleFactor	1.20984 0.167163 0.247594
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.0397589 0.038631 0.0388459
+							diffuseColor	0.155308 0.150902 0.151742
+							specularColor	0.528268 0.524391 0.524455
+							emissiveColor	0 0 0
+							shininess	0.102041
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.0849391
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				    Group {
+					Info {
+					}
+					Separator {
+					    Transform {
+						translation	-0.017433 -0.098456 -0.06695
+						rotation	0 0 1  0
+						scaleFactor	2.00336 0.401255 0.526971
+						scaleOrientation	0 0 1  0
+						center	0 0 0
+					    }
+					    Separator {
+						Group {
+						    Info {
+							string	"solid"
+						    }
+						    Material {
+							ambientColor	0.0397589 0.038631 0.0388459
+							diffuseColor	0.155308 0.150902 0.151742
+							specularColor	0.528268 0.524391 0.524455
+							emissiveColor	0 0 0
+							shininess	0.102041
+							transparency	0
+						    }
+						}
+						Sphere {
+						    radius	0.0849391
+						}
+						Separator {
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+}

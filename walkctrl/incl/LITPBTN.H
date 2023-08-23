@@ -1,0 +1,1 @@
+#ifndef LIGHT_PIN_BUTTON#define LIGHT_PIN_BUTTON#include "Button.h"struct LightPinButton:ToolButton	{	int pin;	void cButtonSet(void);	void MouseDown(int,long);	int GetPin(void);	};	#endif //LIGHT_PIN_BUTTON

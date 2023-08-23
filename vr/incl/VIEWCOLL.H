@@ -1,0 +1,1 @@
+#ifndef _VIEW_COLLIDE_#define _VIEW_COLLIDE_#include "WTypes.h"#define COLLISION_DETECTION 1#if COLLISION_DETECTION/* return codes */#define	RAY_MISSED		 0#define	RAY_HIT			 1void CalcRay(Point3D, Point3D, Point3Ddouble *, Point3Ddouble *, double *);#endif // COLLISION_DETECTION#endif // _VIEW_COLLIDE_

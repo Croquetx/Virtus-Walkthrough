@@ -1,0 +1,1 @@
+#include <stddef.h>#include <stdlib.h>#include <new.h>//void* operator new(size_t obj_size, void* some_ptr)//	{//	return calloc(obj_size,1);//	}void* operator new(size_t obj_size)	{	return calloc(obj_size,1);	}	void operator delete(void *obj)	{	free(obj);	}	

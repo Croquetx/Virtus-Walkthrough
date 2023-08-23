@@ -1,0 +1,1 @@
+#ifndef _GOURAUD_H_#define _GOURAUD_H_struct GouraudRendSettings {	struct V_Array *intensities;	unsigned char unshaded_color;		// unshaded color index 0..255};void InitGouraud(void);void EndGouraud(void);	//JAM 5OCT94 need to delete stuff we createdextern struct V_Offscreen *gOff8;#endif // _GOURAUD_H_

@@ -1,0 +1,70 @@
+#VRML V1.0 ascii
+PerspectiveCamera {
+	position 2 10 400
+	focalDistance 800
+	}
+
+Separator {
+
+Separator {
+
+ 	Material { emissiveColor 1 1 1 }
+
+	Texture2 { filename "shrink.gif" }
+
+	WWWAnchor { name "http://www.mcp.com/people/mhughes/" description "H yper T ext M ichae L" 
+		
+			Sphere { radius 25 }
+		}
+
+	Separator {
+
+		Transform { translation 70 70 98 }
+
+		Material { diffuseColor 1.0 1.0 1.0  }
+
+		Rotation { rotation 0 1 0 3.14 }
+
+		Texture2 { filename "purmarb.gif" }
+
+		WWWAnchor { name "http://www.mcp.com/people/mhughes/old/"   description "The Author's Biography" 
+	
+			Sphere { radius 15 }
+
+		}
+	}
+
+	Separator {
+		Transform { translation -90 -78 84 }
+
+		Material { ambientColor 1 1 1 }
+
+		Rotation { rotation 0 0 1 3.14 }
+
+		Texture2 { filename "psychtv.gif" }
+
+		WWWAnchor { name "http://www.mcp.com/people/mhughes/herenow.html" description "Rants and Raves (Ideas)" 
+
+			Sphere { radius 9 }	
+		}
+	}
+
+
+	Separator {
+
+		Transform { translation 104 29 80 }
+
+
+		Material { diffuseColor 1.0 1.0 1.0 }
+
+		Texture2 { filename "parrot.gif" }
+
+		Rotation { rotation 1 0 0 3.14 }
+
+		WWWAnchor { name "http://www.mcp.com/people/mhughes/scrapbook/" description "Photos" 
+
+			Sphere { radius 8 }
+		}
+	}
+}
+}

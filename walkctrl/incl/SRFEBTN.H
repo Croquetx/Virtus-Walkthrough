@@ -1,0 +1,1 @@
+#ifndef SURFACEEDIT_BUTTON#define SURFACEEDIT_BUTTON#include "Button.h"struct SurfaceToolButton:ToolButton{	void cButtonSet(void);	void MouseDown(int,long);	// MERGE-GOURAUD-PRO-10	};struct PosnSurfToolButton:ToolButton{	void cButtonSet(void);	};		struct SurfModButton:ModButton{	void cButtonSet(void);	};#endif //SURFACEEDIT_BUTTON

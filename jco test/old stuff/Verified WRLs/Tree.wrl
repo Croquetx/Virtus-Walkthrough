@@ -1,0 +1,525 @@
+#VRML V1.0 ascii
+
+Separator {
+
+    DirectionalLight {
+
+        direction 0 0 -1  # Light shining from viewer into scene
+
+    }
+
+    PerspectiveCamera {
+
+        position   0 0 40
+
+        orientation 0 0 0 0
+
+        focalDistance    10.84
+
+    }
+
+
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/tipharth.html"
+	
+	description "Tiphareth"
+
+  Separator {   # Tiphareth
+
+        Material {
+
+            diffuseColor .94117647 .874509803 .0588235294   # Yellow
+
+        }
+
+        Translation { translation 0 0 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/yesod.html"
+
+	description "Yesod"
+
+  Separator {   # Yesod
+  
+        Material {
+
+            diffuseColor .552941176 .08627450980 .521568627451   # Violet
+
+        }
+   
+        Translation { translation 0 -7 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+ 
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/hod.html"
+	
+	description "Hod"
+ 
+  Separator {   # Hod
+  
+        Material {
+
+            diffuseColor .9882352941176 .5529411764706 .01960784313725  # Orange
+
+        }
+   
+        Translation { translation -6 -4 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+ 
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/netzach.html"
+
+	description "Netzach"
+ 
+ Separator {   # Netzach
+  
+        Material { 
+
+            diffuseColor .05490196078 .42352941176 .023529411764
+
+        }
+   
+        Translation { translation 6 -4 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/geburah.html"
+
+	description "Geburah"
+
+  Separator {   # Geburah
+  
+        Material { 
+
+            diffuseColor 1 0 0
+
+        }
+   
+        Translation { translation -6 4 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+ 
+ 	name "http://w3.one.net/~willb/chesed.html"
+
+        description "Chesed"
+
+  Separator {   # Chesed
+  
+        Material { 
+
+            diffuseColor 0 0 1
+
+        }
+   
+        Translation { translation 6 4 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+
+	name "http://w3.one.net/~willb/binah.html"
+
+	description "Binah"
+
+  Separator {   # Binah
+  
+        Material { 
+
+            diffuseColor .1 .1 .1
+
+        }
+   
+        Translation { translation -6 11 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+
+	name "http://w3.one.net/~willb/chokmah.html"
+
+	description "Chokmah"
+
+  Separator {   # Chokmah
+  
+        Material { 
+
+            diffuseColor .5 .5 .5
+        }
+   
+        Translation { translation 6 11 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ } 
+
+ WWWAnchor {
+	
+	name "http://w3.one.net/~willb/kether.html"
+
+	description "Kether"
+
+  Separator {   # Kether
+  
+        Material { 
+
+            diffuseColor 1 1 1
+
+        }
+   
+        Translation { translation 0 15 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+ WWWAnchor {
+
+	name "http://w3.one.net/~willb/malkuth.html"
+
+	description "Malkuth"
+
+  Separator {   # Malkuth
+  
+        Material { 
+
+            diffuseColor .3764705882353 .1882352941 0
+
+        }
+   
+        Translation { translation 0 -15 0 }
+
+        Sphere { radius 1.5 }
+
+    }
+
+ }
+
+  Separator {
+
+	Translation { translation -6 3.5 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  15   # SFFloat
+
+        }
+   
+  }
+
+  Separator {
+
+	Translation { translation 6 3.5 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  15    # SFFloat
+
+        }
+   
+  }
+
+  Separator {
+
+	Translation { translation 0 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  30  # SFFloat
+
+        }
+   
+  }
+
+  Separator {
+
+	Rotation { rotation 0 0 1  1.570796325 }
+
+	Translation { translation -4 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  9    # SFFloat
+
+        }
+   
+  }
+
+  Separator {
+
+	Rotation { rotation 0 0 1  1.570796325 }
+
+	Translation { translation 4 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  9    # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  1.570796325 }
+
+	Translation { translation 11 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  9    # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  -.97 }
+
+	Translation { translation -12.6 4.67 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  5  # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  .97 }
+
+	Translation { translation 12.6 4.67 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  5   # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  1 }
+
+	Translation { translation 0 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  12 # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  -1 }
+
+	Translation { translation 0 0 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  12   # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  1 }
+
+	Translation { translation -6.6 -.47 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height 5   # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  -1 }
+
+	Translation { translation 6.6 -.47 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height  5   # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  .47 }
+
+	Translation { translation -7.4 -7 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height 10.4   # SFFloat
+
+        }
+   
+  }
+ 
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  -.47 }
+
+	Translation { translation 7.4 -7 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height 10.4   # SFFloat
+
+        }
+   
+  }
+  Separator {
+
+	Rotation { rotation 0 0 1  .47 }
+
+	Translation { translation 0 6.5 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height 10.4   # SFFloat
+
+        }
+   
+  }
+ 
+  Separator {
+
+	Rotation { rotation 0 0 1  -.47 }
+
+	Translation { translation 0 6.5 0 }
+ 
+ 	Cylinder {
+
+             parts   SIDES   # SFBitMask
+
+             radius  .5   # SFFloat
+
+             height 10.4   # SFFloat
+
+        }
+   
+  }
+ 
+ 
+
+}

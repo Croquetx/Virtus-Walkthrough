@@ -1,0 +1,185 @@
+#VRML V1.0 ascii
+
+Separator {
+	Info { string "Virtus WalkThrough Pro 2.5
+	VRML Export Filter
+	Virtus Corporation
+	118 MacKenan Drive, Suite 250
+	Cary, NC 27511
+	919-467-9700"}
+
+	DirectionalLight {
+		on         TRUE       # SFBool
+		intensity  1          # SFFloat
+		color      1 1 1      # SFColor
+		direction  0 0 -1     # SFVec3f
+	}
+
+	ShapeHints {
+		vertexOrdering	CLOCKWISE
+		shapeType	SOLID
+		}
+
+	Transform {
+		translation 0 0 0
+		scaleFactor 1.0 1.0 1.0
+		}
+
+Separator { #Polyhedron
+	DEF COORD0 Coordinate3 {
+		point [
+		120.000000 96.000000 -120.000000 ,
+		120.000000 96.000000 -0.000000 ,
+		0.000000 96.000000 -0.000000 ,
+		0.000000 96.000000 -120.000000 ,
+		120.000000 0.000000 -120.000000 ,
+		120.000000 0.000000 -0.000000 ,
+		0.000000 0.000000 -0.000000 ,
+		0.000000 0.000000 -120.000000 ,
+		70.285706 96.000000 -0.000000 ,
+		70.285706 96.000000 -120.000000 ,
+		120.000000 38.000000 -120.000000 ,
+		120.000000 38.000000 -0.000000 ]
+	} #Coordinate3
+} #Polyhedron
+WWWAnchor {
+	name "www.top.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [ 0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [ 1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [ 1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 8,2,3,9,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.back.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              9,3,7,4,10,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.right.bottom.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              10,4,5,11,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.front.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              2,8,11,5,6,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.left.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              3,2,6,7,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.bottom.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              7,6,5,4,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+WWWAnchor {
+	name "www.right.slant.com"
+	map NONE
+	Separator { #Polyhedron
+		USE COORD0
+		Material {
+			ambientColor [			               0.250000 0.250000 0.250000,
+] #ambientColor
+			diffuseColor [			               1.000000 1.000000 1.000000,
+] #diffuseColor
+			transparency [			               1.000000,
+] #transparency
+			} #Material
+
+		IndexedFaceSet {
+				coordIndex [ 			              8,9,10,11,-1,
+]
+		} #IndexedFaceSet
+	} #Polyhedron
+} #WWWAnchor
+}

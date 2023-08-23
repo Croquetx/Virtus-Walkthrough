@@ -1,0 +1,1 @@
+#ifndef V_ERROR#define V_ERROR#if MACINTOSH#define fileNotFoundErr	fnfErr#endif //WINDOWS#if WINDOWS#define fileNotFoundErr	-1#define memFullErr	(-108)	//matching mac; //GJR 10/01/93#define noErr	0#endif //WINDOWSvoid ResultError(int);#endif //V_ERROR

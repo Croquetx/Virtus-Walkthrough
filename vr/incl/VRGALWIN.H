@@ -1,0 +1,1 @@
+#ifndef __VR_GALLERYWINDOW__#define __VR_GALLERYWINDOW__struct VR_GalleryWindow:V_Window{	void Show(void);		// BILBIL - 12/15/93	void Hide(void);		// BILBIL - 12/15/93	};#endif //__VR_GALLERYWINDOW

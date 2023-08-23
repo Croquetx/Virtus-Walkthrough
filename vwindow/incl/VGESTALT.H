@@ -1,0 +1,1 @@
+#ifndef V_GESTALT#define V_GESTALTextern int gGestaltAvailable;extern int gAppleEvents;extern int gFSSpecCalls;extern int gIsBalloon;extern int gQuickTime;extern int gHaveAUX;extern int gAliasMgrPresent;extern int gIsSystemSeven;#endif //V_GESTALT

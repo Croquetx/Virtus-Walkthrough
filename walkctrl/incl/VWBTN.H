@@ -1,0 +1,1 @@
+#ifndef VW_BUTTON#define VW_BUTTON#include "Button.h"struct ViewCameraButton:ToolButton{	void cButtonSet(void);	void SetButtonState(int);	void MouseDown(int ,long );	};	// MERGE-GOURAUD [[[struct Pick3DButton:ToolButton{	void cButtonSet(void);	};// MERGE-GOURAUD ]]]	#endif //VW_BUTTON

@@ -1,0 +1,1 @@
+#ifndef EXPORT_CLARISCAD#define EXPORT_CLARISCAD#include "VTYPES.H"#if VWT// jca 17 Sept 93.  {#include "XMDrawII.h"struct Export_ClarisCAD:Export_MacDrawII	{	int Open(struct V_Buffer *, ExportUnit, double);	};// jca 17 Sept 93 }#endif // VWT#endif //EXPORT_CLARISCAD

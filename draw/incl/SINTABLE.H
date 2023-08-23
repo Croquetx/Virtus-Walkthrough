@@ -1,0 +1,1 @@
+#define sin256(a)		SinTable256[(a) & 0xff]#define cos256(a)		SinTable256[(a)+64 & 0xff]#define sin360(a)		SinTable360[(a)]#define cos360(a)		SinTable360[(a)+90]#define sin256w(a)		SinTable256w[(a) & 0xff]#define cos256w(a)		SinTable256w[(a)+64 & 0xff]extern char SinTable256[];extern char SinTable360[];extern short SinTable256w[];

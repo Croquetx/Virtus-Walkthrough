@@ -1,0 +1,423 @@
+#VRML V1.0 ascii
+
+Separator {
+	Info { string "Virtus WalkThrough Pro 2.5.1
+	VRML Export Filter
+	Virtus Corporation
+	118 MacKenan Drive, Suite 250
+	Cary, NC 27511
+	919-467-9700"}
+
+	DirectionalLight {
+		on         TRUE       # SFBool
+		intensity  .5          # SFFloat
+		color      1 1 1      # SFColor
+		direction  -1 -1 -1     # SFVec3f
+	}
+
+	DirectionalLight {
+		on         TRUE       # SFBool
+		intensity  .9          # SFFloat
+		color      1 1 1      # SFColor
+		direction  1 1 1     # SFVec3f
+	}
+
+	ShapeHints {
+		vertexOrdering	CLOCKWISE
+		shapeType	SOLID
+		}
+
+	Transform {
+		translation 0 0 0
+		scaleFactor 1.0 1.0 1.0
+		}
+
+Separator { #Polyhedron
+	DEF COORD0 Coordinate3 {
+		point [
+		-3.048000 5.486400 -2.743200 ,
+		-3.048000 5.486400 -0.304800 ,
+		-5.486400 5.486400 -0.304800 ,
+		-5.486400 5.486400 -2.743200 ,
+		-3.048000 3.048000 -2.743200 ,
+		-3.048000 3.048000 -0.304800 ,
+		-5.486400 3.048000 -0.304800 ,
+		-5.486400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor [ 0.208824 0.208824 0.000000,
+		               0.208824 0.208824 0.000000,
+		               0.208824 0.208824 0.000000,
+		               0.208824 0.208824 0.000000,
+		               0.208824 0.208824 0.000000,
+		               0.208824 0.208824 0.000000,
+] #ambientColor
+		diffuseColor [ 0.835294 0.835294 0.000000,
+		               0.835294 0.835294 0.000000,
+		               0.835294 0.835294 0.000000,
+		               0.835294 0.835294 0.000000,
+		               0.835294 0.835294 0.000000,
+		               0.835294 0.835294 0.000000,
+] #diffuseColor
+		transparency [ 0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+] #transparency
+		} #Material
+
+	IndexedFaceSet {
+			coordIndex [ 		              6,5,1,2,-1,
+2,1,5,6,-1,
+]
+	} #IndexedFaceSet
+} #Polyhedron
+Separator { #Polyhedron
+	DEF COORD1 Coordinate3 {
+		point [
+		-3.962400 5.486400 -2.743200 ,
+		-3.962400 5.486400 -0.914400 ,
+		-5.486400 5.486400 -0.914400 ,
+		-5.486400 5.486400 -2.743200 ,
+		-3.962400 3.048000 -2.743200 ,
+		-3.962400 3.048000 -0.914400 ,
+		-5.486400 3.048000 -0.914400 ,
+		-5.486400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor [ 0.250000 0.050000 0.050000,
+		               0.250000 0.050000 0.050000,
+		               0.250000 0.050000 0.050000,
+		               0.250000 0.050000 0.050000,
+		               0.250000 0.050000 0.050000,
+		               0.250000 0.050000 0.050000,
+] #ambientColor
+		diffuseColor [ 1.000000 0.200000 0.200000,
+		               1.000000 0.200000 0.200000,
+		               1.000000 0.200000 0.200000,
+		               1.000000 0.200000 0.200000,
+		               1.000000 0.200000 0.200000,
+		               1.000000 0.200000 0.200000,
+] #diffuseColor
+		transparency [ 0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+] #transparency
+		} #Material
+
+	IndexedFaceSet {
+			coordIndex [ 		              5,4,0,1,-1,
+1,0,4,5,-1,
+		              6,5,1,2,-1,
+2,1,5,6,-1,
+]
+	} #IndexedFaceSet
+} #Polyhedron
+Separator { #Polyhedron
+	DEF COORD2 Coordinate3 {
+		point [
+		-0.609600 5.486400 -2.743200 ,
+		-0.609600 5.486400 -0.304800 ,
+		-3.048000 5.486400 -0.304800 ,
+		-3.048000 5.486400 -2.743200 ,
+		-0.609600 3.048000 -2.743200 ,
+		-0.609600 3.048000 -0.304800 ,
+		-3.048000 3.048000 -0.304800 ,
+		-3.048000 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor [ 0.050000 0.200000 0.200000,
+		               0.050000 0.200000 0.200000,
+		               0.050000 0.200000 0.200000,
+		               0.050000 0.200000 0.200000,
+		               0.050000 0.200000 0.200000,
+		               0.050000 0.200000 0.200000,
+] #ambientColor
+		diffuseColor [ 0.200000 0.800000 0.800000,
+		               0.200000 0.800000 0.800000,
+		               0.200000 0.800000 0.800000,
+		               0.200000 0.800000 0.800000,
+		               0.200000 0.800000 0.800000,
+		               0.200000 0.800000 0.800000,
+] #diffuseColor
+		transparency [ 0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+		               0.000000,
+] #transparency
+		} #Material
+
+	IndexedFaceSet {
+			coordIndex [ 3,2,1,0,-1,
+0,1,2,3,-1,
+		              4,7,3,0,-1,
+0,3,7,4,-1,
+		              5,4,0,1,-1,
+1,0,4,5,-1,
+		              6,5,1,2,-1,
+2,1,5,6,-1,
+		              4,5,6,7,-1,
+7,6,5,4,-1,
+]
+	} #IndexedFaceSet
+} #Polyhedron
+
+#inside polygons
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 3.048000 -0.914400 ,
+		-5.486400 3.048000 -0.304800 ,
+		-3.048000 3.048000 -0.304800 ,
+		-3.048000 3.048000 -2.743200 ,
+		-3.962400 3.048000 -2.743200 ,
+		-3.962400 3.048000 -0.914400 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [2,1,5,-1, 
+2,5,3,-1, 
+1,0,5,-1, 
+5,4,3,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 3.048000 -2.743200 ,
+		-5.486400 3.048000 -0.914400 ,
+		-3.962400 3.048000 -0.914400 ,
+		-3.962400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.250000 0.050000 0.050000
+		diffuseColor 1.000000 0.200000 0.200000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 5.486400 -0.914400 ,
+		-5.486400 5.486400 -0.304800 ,
+		-5.486400 3.048000 -0.304800 ,
+		-5.486400 3.048000 -0.914400 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 5.486400 -2.743200 ,
+		-5.486400 5.486400 -0.914400 ,
+		-5.486400 3.048000 -0.914400 ,
+		-5.486400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.250000 0.050000 0.050000
+		diffuseColor 1.000000 0.200000 0.200000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.048000 5.486400 -0.304800 ,
+		-3.048000 5.486400 -2.743200 ,
+		-3.048000 3.048000 -2.743200 ,
+		-3.048000 3.048000 -0.304800 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.962400 5.486400 -2.743200 ,
+		-3.962400 3.048000 -2.743200 ,
+		-3.048000 3.048000 -2.743200 ,
+		-3.048000 5.486400 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.962400 5.486400 -2.743200 ,
+		-5.486400 5.486400 -2.743200 ,
+		-5.486400 3.048000 -2.743200 ,
+		-3.962400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.250000 0.050000 0.050000
+		diffuseColor 1.000000 0.200000 0.200000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.962400 5.486400 -2.743200 ,
+		-3.048000 5.486400 -2.743200 ,
+		-3.048000 5.486400 -0.304800 ,
+		-5.486400 5.486400 -0.304800 ,
+		-5.486400 5.486400 -0.914400 ,
+		-3.962400 5.486400 -0.914400 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [2,4,3,-1, 
+1,0,5,-1, 
+5,4,2,-1, 
+1,5,2,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.962400 5.486400 -2.743200 ,
+		-3.962400 5.486400 -0.914400 ,
+		-5.486400 5.486400 -0.914400 ,
+		-5.486400 5.486400 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.250000 0.050000 0.050000
+		diffuseColor 1.000000 0.200000 0.200000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+
+#outside polygons
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.048000 5.486400 -2.743200 ,
+		-3.048000 5.486400 -0.304800 ,
+		-5.486400 5.486400 -0.304800 ,
+		-5.486400 5.486400 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [0,1,2,3,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.048000 5.486400 -2.743200 ,
+		-5.486400 5.486400 -2.743200 ,
+		-5.486400 3.048000 -2.743200 ,
+		-3.048000 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [0,1,2,3,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-3.048000 5.486400 -2.743200 ,
+		-3.048000 5.486400 -0.304800 ,
+		-3.048000 3.048000 -0.304800 ,
+		-3.048000 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.050000 0.200000 0.200000
+		diffuseColor 0.200000 0.800000 0.800000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [3,2,1,0,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 5.486400 -2.743200 ,
+		-5.486400 5.486400 -0.304800 ,
+		-5.486400 3.048000 -0.304800 ,
+		-5.486400 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [0,1,2,3,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+Separator { #polygon
+	DEF COORD0 Coordinate3 {
+		point [		-5.486400 3.048000 -2.743200 ,
+		-5.486400 3.048000 -0.304800 ,
+		-3.048000 3.048000 -0.304800 ,
+		-3.048000 3.048000 -2.743200 ]
+	} #Coordinate3
+	Material {
+		ambientColor 0.208824 0.208824 0.000000
+		diffuseColor 0.835294 0.835294 0.000000
+		transparency 0.000000
+	} #Material
+	IndexedFaceSet {
+		coordIndex [0,1,2,3,-1, 
+	]
+	} #indexedfaceset
+} #polygon
+}

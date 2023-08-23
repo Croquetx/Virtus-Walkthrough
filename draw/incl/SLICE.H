@@ -1,0 +1,1 @@
+#ifndef SLICE#define SLICE#include "WTypes.h"#include "VIO.h"struct Slice:V_IO	{	FFixed a, b, c, d;	/* --- */	virtual void cSlice(FFixed, FFixed, FFixed, FFixed);	void dSlice(void);		void ChangeUnit(FFixed);	Point3DFFixed Normal(void);	int IO(struct V_Buffer *);	};#endif //SLICE

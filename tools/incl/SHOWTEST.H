@@ -1,0 +1,1 @@
+void ShowMem(int flag);void ShowTime(int flag);void ShowInfo(char *str);void ShowInfo2(char *str);		// MERGE-FPS2void ShowNum(long num);void ShowDisplay(long c,long d);void ShowString(char *str);void ShowOffscreen(struct V_Offscreen *off);		// ABD MERGE4void ShowOffscreenMore(struct V_Offscreen *off);		// jca 29 Sept 93#if WINDOWSint TestDC(HWND hwnd);#endif //WINDOWS

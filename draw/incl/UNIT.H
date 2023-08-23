@@ -1,0 +1,1 @@
+#ifndef UNIT#define UNIT#include "VIO.h"struct Unit:V_IO	{	double size;	/* --- */	void cUnit(void);	void dUnit(void);	void Copy(struct Unit *);	void SetSize(double);	double GetSize(void);	double ConvertTo(struct Unit *);	double ConvertFrom(struct Unit *);	int IO(struct V_Buffer *);	};#endif //UNIT

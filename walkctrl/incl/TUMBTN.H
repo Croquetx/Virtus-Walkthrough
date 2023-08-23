@@ -1,0 +1,1 @@
+#ifndef TUMBLE_BUTTON#define TUMBLE_BUTTON#include "Button.h"struct TumbleToolButton:ToolButton{	void cButtonSet(void);	void MouseDown(int,long);	// MERGE-GOURAUD-PRO-10	};	#endif //TUMBLE_BUTTON

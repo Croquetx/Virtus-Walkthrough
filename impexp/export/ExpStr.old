@@ -1,0 +1,1 @@
+#ifndef EXPSTR#include "ExpStr.h"#endif#if THINK_COSErr IOString(V_Buffer *buf,char *str) 	{return buf->IOData(str,strlen(str));}OSErr IOIndentString(V_Buffer *buf, char *str, int indent)	{	int i;	OSErr err=0;	if(indent<0)indent=0;	for(i=0;i<indent && !err;i++)err=IOString(buf,TAB);	if(!err)		err=IOString(buf,str);	return err;	}	#endif

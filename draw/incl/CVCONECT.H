@@ -1,0 +1,1 @@
+#ifndef CAVCONNECTION#define CAVCONNECTIONstruct CAVConnection:indirect	{	struct Polyhedron 	*toPoly;	short				toWall;	short				fromWall;		void cCAVConnection(struct Polyhedron 	*,short,short);	void dCAVConnection(void);	};#endif //CAVCONNECTION

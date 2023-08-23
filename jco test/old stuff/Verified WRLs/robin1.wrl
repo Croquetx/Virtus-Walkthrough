@@ -1,0 +1,1445 @@
+#VRML V1.0 ascii
+
+DEF Viewer Info { string "walk" }
+DEF Title Info { string "Robins Castle 1" }
+
+Separator {
+  PerspectiveCamera {
+    position  -0.0105411 -0.099341 1.62776
+        orientation  0 0 1 0
+  }
+  PointLight {
+    on      TRUE
+    intensity       1
+    color   0.705882 0.905882 0.705882
+    location        0 26.736 37.762
+  }
+  PointLight {
+    on      TRUE
+    intensity       1
+    color   0.905882 0.705882 0.705882
+    location        -69.139 96.736 -27.762
+  }
+  PointLight {
+    on      TRUE
+    intensity       1
+    color   0.705882 0.705882 0.905882
+    location        69.139 96.736 -27.762
+  }
+  Separator {
+    Group {
+      Separator {
+        Transform {
+          translation  0.0024455 -0.374653 0.65928
+              rotation  0 0 1  0
+              scaleFactor  21.6917 1 46.8934
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "floor"
+            }
+            Material {
+              ambientColor  0.0548827 0.13582 0.0451952
+                  diffuseColor  0.215415 0.533093 0.177391
+                  specularColor  0 0.272814 0
+                  emissiveColor  0 0 0
+                  shininess  0.0714286
+                  transparency  0
+            }
+            Complexity {
+              value  0.1
+            }
+          }
+          Cube {
+            width  0.0725164
+                height  0.0464105
+                depth  0.0464105
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.307175 -0.0396141 0.306113
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "pillar1"
+            }
+            Material {
+              ambientColor  0.103014 0.105626 0.187004
+                  diffuseColor  0.412056 0.422504 0.748016
+                  specularColor  0.290909 0.290909 0.290909
+                  emissiveColor  0 0 0
+                  shininess  0.787879
+                  transparency  0
+            }
+            Complexity {
+              value  0.1
+            }
+          }
+          Cylinder {
+            radius  0.036365
+                height  0.623666
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.302213 -0.0407038 0.303257
+              rotation  0 0 1  0
+              scaleFactor  1 1 0.999998
+              scaleOrientation  -1 0 0  0.778776
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "pillar2"
+            }
+            Material {
+              ambientColor  0.103014 0.105626 0.187004
+                  diffuseColor  0.412056 0.422504 0.748016
+                  specularColor  0.290909 0.290909 0.290909
+                  emissiveColor  0 0 0
+                  shininess  0.787879
+                  transparency  0
+            }
+            Complexity {
+              value  0.1
+            }
+          }
+          Cylinder {
+            radius  0.036365
+                height  0.623666
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.300633 -0.0405701 -0.306069
+              rotation  0 1 -1.99675e-06  3.14159
+              scaleFactor  0.999999 1 0.999996
+              scaleOrientation  -1 -2.46019e-10 -3.77931e-11  0.606013
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "pillar3"
+            }
+            Material {
+              ambientColor  0.103014 0.105626 0.187004
+                  diffuseColor  0.412056 0.422504 0.748016
+                  specularColor  0.290909 0.290909 0.290909
+                  emissiveColor  0 0 0
+                  shininess  0.787879
+                  transparency  0
+            }
+            Complexity {
+              value  0.1
+            }
+          }
+          Cylinder {
+            radius  0.036365
+                height  0.623666
+          }
+          Separator {
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.305574 -0.040833 -0.307042
+              rotation  0 1 1.03116e-05  3.14159
+              scaleFactor  1.00001 0.999999 0.999985
+              scaleOrientation  0.383696 -0.368905 0.846573  1.6359
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "pillar4"
+            }
+            Material {
+              ambientColor  0.103014 0.105626 0.187004
+                  diffuseColor  0.412056 0.422504 0.748016
+                  specularColor  0.290909 0.290909 0.290909
+                  emissiveColor  0 0 0
+                  shininess  0.787879
+                  transparency  0
+            }
+            Complexity {
+              value  0.1
+            }
+          }
+          Cylinder {
+            radius  0.036365
+                height  0.623666
+          }
+          Separator {
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  -0.232933 -0.351446 -0.216842
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 0.999999 0.999999
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball1"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+          Separator {
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.000925788 -0.351446 -0.229222
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 0.999999 0.999999
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball2"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+          Separator {
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.226827 -0.351446 -0.218114
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 0.999998 0.999998
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball3"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.228846 -0.351446 0.213794
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 0.999998 0.999998
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball4"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  -0.230914 -0.351446 0.215066
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball5"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00294462 -0.351446 0.23232
+              rotation  -1 0 0  1.5708
+              scaleFactor  1 0.999999 0.999999
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "ball6"
+            }
+            Material {
+              ambientColor  0.0488387 0.0494809 0.0499912
+                  diffuseColor  0.195355 0.197924 0.199965
+                  specularColor  0.430303 0.430303 0.430303
+                  emissiveColor  0 0 0
+                  shininess  0.406061
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Sphere {
+            radius  0.0952683
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  -0.232965 -0.351447 -0.00416327
+              rotation  -1 0 0  1.5708
+              scaleFactor  0.999999 7.06378 0.999999
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "strut1"
+            }
+            Material {
+              ambientColor  0.187004 0 0.0100218
+                  diffuseColor  0.748016 0 0.0400871
+                  specularColor  0.89697 0.89697 0.89697
+                  emissiveColor  0 0 0
+                  shininess  1
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.0524718
+                height  0.0476745
+                depth  0.0476745
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.000622206 -0.348426 -0.0088169
+              rotation  -1 0 0  1.5708
+              scaleFactor  0.999999 7.06377 0.999998
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "strut2"
+            }
+            Material {
+              ambientColor  0.0132882 0.204489 0.0220044
+                  diffuseColor  0.0531526 0.817956 0.0880178
+                  specularColor  0.00621169 0.0955906 0.0102862
+                  emissiveColor  0 0 0
+                  shininess  0.078125
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.0524718
+                height  0.0476745
+                depth  0.0476745
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.229475 -0.347754 -0.00851913
+              rotation  -1 0 0  1.5708
+              scaleFactor  0.999999 7.06376 0.999997
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "strut3"
+            }
+            Material {
+              ambientColor  0.000579251 0 0.187004
+                  diffuseColor  0.002317 0 0.748016
+                  specularColor  0.884848 0.884848 0.884848
+                  emissiveColor  0 0 0
+                  shininess  0.830303
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.0524718
+                height  0.0476745
+                depth  0.0476745
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  0.000279381 -0.00299651 -0.291463
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "slat1"
+            }
+            Material {
+              ambientColor  0.0135021 0.0582278 0.097479
+                  diffuseColor  0.0540084 0.232911 0.389916
+                  specularColor  0.0510891 0.220322 0.368839
+                  emissiveColor  0.00540541 0.00540541 0.00540541
+                  shininess  0.0648649
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.552848
+                height  0.0141841
+                depth  0.0141841
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00172281 -0.0430295 -0.276198
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "slat2"
+            }
+            Material {
+              ambientColor  0 0.153925 0.0501226
+                  diffuseColor  0 0.538739 0.175429
+                  specularColor  0.280892 0.824187 0.499277
+                  emissiveColor  0 0 0
+                  shininess  1
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.552848
+                height  0.0141841
+                depth  0.0141841
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00172277 -0.0730673 -0.264744
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "slat3"
+            }
+            Material {
+              ambientColor  0.102703 0.0174664 0.0348145
+                  diffuseColor  0.416216 0.0707851 0.14109
+                  specularColor  0.372973 0.00253723 0.00126432
+                  emissiveColor  0 0 0
+                  shininess  0.0108108
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.552848
+                height  0.0141841
+                depth  0.0141841
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00172281 -0.0977486 -0.255333
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "slat4"
+            }
+            Material {
+              ambientColor  0.0544218 0.0285714 0.0176271
+                  diffuseColor  0.217687 0.114286 0.0705085
+                  specularColor  0.254054 0.117984 0.120752
+                  emissiveColor  0 0 0
+                  shininess  0.135135
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.552848
+                height  0.0141841
+                depth  0.0141841
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00057427 -0.117064 -0.247967
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "slat5"
+            }
+            Material {
+              ambientColor  0.0055341 0.0040326 0.0115437
+                  diffuseColor  0.0227513 0.0165785 0.0474576
+                  specularColor  0.271499 0.302282 0.351351
+                  emissiveColor  0 0 0
+                  shininess  0.135135
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.552848
+                height  0.0141841
+                depth  0.0141841
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  -0.00920027 -0.333134 0.579217
+              rotation  -1 0 0  1.5708
+              scaleFactor  5.26081 11.1668 2.92494
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "step1"
+            }
+            Material {
+              ambientColor  0.226102 0.137326 0.0560706
+                  diffuseColor  0.904409 0.549305 0.224283
+                  specularColor  0.0955906 0.0955906 0.0955906
+                  emissiveColor  0 0 0
+                  shininess  0.078125
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.155792
+                height  0.0322555
+                depth  0.0322555
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.00974638 -0.347917 0.784593
+              rotation  -1 0 0  1.5708
+              scaleFactor  5.80428 2.36056 2.92494
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "step2"
+            }
+            Material {
+              ambientColor  0.226102 0.0788828 0.136097
+                  diffuseColor  0.904409 0.315531 0.544386
+                  specularColor  0.0955906 0.0955906 0.0955906
+                  emissiveColor  0 0 0
+                  shininess  0.078125
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.155792
+                height  0.0322555
+                depth  0.0322555
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.000615851 -0.360851 0.847365
+              rotation  -1 0 0  1.5708
+              scaleFactor  6.45315 2.58719 2.92493
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "step3"
+            }
+            Material {
+              ambientColor  0.113974 0.187427 0.226102
+                  diffuseColor  0.455896 0.749706 0.904409
+                  specularColor  0.0955906 0.0955906 0.0955906
+                  emissiveColor  0 0 0
+                  shininess  0.078125
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.155792
+                height  0.0322555
+                depth  0.0322555
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.00167245 -0.376696 0.923953
+              rotation  -1 0 0  1.5708
+              scaleFactor  6.97404 2.74021 2.92494
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "step4"
+            }
+            Material {
+              ambientColor  0.090187 0.187004 0.0986946
+                  diffuseColor  0.360748 0.748016 0.394778
+                  specularColor  0.345455 0.345455 0.345455
+                  emissiveColor  0 0 0
+                  shininess  0.612121
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          Cube {
+            width  0.155792
+                height  0.0322555
+                depth  0.0322555
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.165993 -0.0634283 0.102408
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "greenball"
+            }
+            Material {
+              ambientColor  0.00634796 0.047354 0.000659749
+                  diffuseColor  0.024884 0.185628 0.00258622
+                  specularColor  0.505305 0.463899 0
+                  emissiveColor  0 0 0
+                  shininess  0.127551
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          WWWAnchor {
+            name "../robinh.html"
+            Sphere {
+              radius  0.0637056
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.0884385 0.0680689 -0.077687
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "goldball"
+            }
+            Material {
+              ambientColor  0.00714286 0.00318111 0
+                  diffuseColor  0.314286 0.139969 0
+                  specularColor  0.607143 0.53913 0
+                  emissiveColor  0 0 0
+                  shininess  0.157143
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          WWWAnchor {
+            name "../savers.html"
+            Sphere {
+              radius  0.0637056
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.161871 -0.0642532 0.102325
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "tealball"
+            }
+            Material {
+              ambientColor  0.0135021 0.0582278 0.097479
+                  diffuseColor  0.0540084 0.232911 0.389916
+                  specularColor  0.0510891 0.220322 0.368839
+                  emissiveColor  0.00540541 0.00540541 0.00540541
+                  shininess  0.0648649
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          WWWAnchor {
+            name "../hot3.html"
+            Sphere {
+              radius  0.0637056
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.0802897 0.0669851 -0.0780056
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "redball"
+            }
+            Material {
+              ambientColor  0.00746438 0.00673081 0.00690282
+                  diffuseColor  0.0291577 0.0262922 0.0269642
+                  specularColor  0.938776 0.0550317 0.0550317
+                  emissiveColor  0 0 0
+                  shininess  0.0612245
+                  transparency  0
+            }
+            Complexity {
+              value  0.17
+            }
+          }
+          WWWAnchor {
+            name "../shipno.html"
+            Sphere {
+              radius  0.0637056
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0 -.2 -.2
+          rotation 0 0 1 0
+          scaleFactor .03 .03 .03
+          scaleOrientation 0 0 1 0
+          center 0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string "Portal to Gallery"
+            }
+            WWWAnchor {
+              name "gallery/gallery.wrl"
+              WWWInline {
+                name "portal.wrl"
+                bboxCenter      0 0.045885 4.99189e-07
+                bboxSize        2.6545 5.03007 0.317917
+
+              }
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -2.01977e-05 -0.275415 0.0183006
+              rotation  0 0 1  0
+              scaleFactor  10.5885 0.85743 14.2205
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "floor2"
+            }
+            Material {
+              ambientColor  0.0301158 0.000642761 0.0290243
+                  diffuseColor  0.12381 0.00264246 0.119322
+                  specularColor  0.151866 0.0223515 0.156482
+                  emissiveColor  0 0 0
+                  shininess  0.0648649
+                  transparency  0
+            }
+            Complexity {
+              value  0
+            }
+          }
+          Cube {
+            width  0.0603944
+                height  0.0504927
+                depth  0.0424927
+          }
+        }
+      }
+    }
+    Group {
+      Separator {
+        Transform {
+          translation  -8.01537e-05 -0.337264 0.00437539
+              rotation  1 -8.19504e-07 -8.19505e-07  1.57079
+              scaleFactor  1 0.999998 0.701097
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "froghut"
+            }
+            Material {
+              ambientColor  0.259459 0.248397 0.008424
+                  diffuseColor  0.5 0.957367 0.0324675
+                  specularColor  0.990909 0.940502 0.208259
+                  emissiveColor  0 0 0
+                  shininess  0.363636
+                  transparency  0
+            }
+            Complexity {
+              value  0
+            }
+          }
+          WWWAnchor {
+		name "../Images/frog.gif"
+         	Cube {
+            		width  0.0788834
+                	height  0.0809508
+                	depth  0.0788834
+            }
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.305675 0.3443 0.305938
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  1 0 0  0.392699
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "roof1"
+            }
+            Material {
+              ambientColor  0.0608964 0.0023948 0.00238474
+                  diffuseColor  0.228214 0.00897471 0.008937
+                  specularColor  0.237838 0 0.101038
+                  emissiveColor  0 0 0
+                  shininess  0.113514
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cone {
+            bottomRadius  0.0447338
+                height  0.125264
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.299891 0.3443 0.301078
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  1 0 0  0.595145
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "roof2"
+            }
+            Material {
+              ambientColor  0.0608964 0.0023948 0.00238474
+                  diffuseColor  0.228214 0.00897471 0.008937
+                  specularColor  0.237838 0 0.101038
+                  emissiveColor  0 0 0
+                  shininess  0.113514
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cone {
+            bottomRadius  0.0447338
+                height  0.125264
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.304532 0.3443 -0.303215
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  1 0 0  0.595145
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "roof3"
+            }
+            Material {
+              ambientColor  0.0608964 0.0023948 0.00238474
+                  diffuseColor  0.228214 0.00897471 0.008937
+                  specularColor  0.237838 0 0.101038
+                  emissiveColor  0 0 0
+                  shininess  0.113514
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cone {
+            bottomRadius  0.0447338
+                height  0.125264
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.300287 0.341762 -0.305358
+              rotation  0 0 1  0
+              scaleFactor  1 1 1
+              scaleOrientation  1 0 0  0.595145
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "roof4"
+            }
+            Material {
+              ambientColor  0.0608964 0.0023948 0.00238474
+                  diffuseColor  0.228214 0.00897471 0.008937
+                  specularColor  0.237838 0 0.101038
+                  emissiveColor  0 0 0
+                  shininess  0.113514
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cone {
+            bottomRadius  0.0447338
+                height  0.125264
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.302157 -0.200369 -0.00302857
+              rotation  -1 -1.87381e-06 1.87381e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat1"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.303841 -0.204264 -0.00110469
+              rotation  -1 -1.87382e-06 1.87382e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat2"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.300287 -0.082123 -0.00302863
+              rotation  -1 -1.87382e-06 1.87381e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat3"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.305711 -0.086019 -0.00110475
+              rotation  -1 -1.87382e-06 1.87382e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat4"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  0.300287 0.0430917 -0.00302863
+              rotation  -1 -1.87382e-06 1.87381e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat5"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+    Group {
+      Info {
+      }
+      Separator {
+        Transform {
+          translation  -0.305711 0.0391957 -0.00110475
+              rotation  -1 -1.87382e-06 1.87382e-06  1.5708
+              scaleFactor  0.552984 0.999996 2.07675
+              scaleOrientation  0 0 1  0
+              center  0 0 0
+        }
+        Separator {
+          Group {
+            Info {
+              string  "sideslat6"
+            }
+            Material {
+              ambientColor  0.194631 0.146621 0.135912
+                  diffuseColor  0.766102 0.577127 0.534973
+                  specularColor  0 0 0
+                  emissiveColor  0 0 0
+                  shininess  0.027027
+                  transparency  0
+            }
+            Complexity {
+              value  0.15
+            }
+          }
+          Cube {
+            width  0.0406567
+                height  0.569017
+                depth  0.0406567
+          }
+        }
+      }
+    }
+  }
+}

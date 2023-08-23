@@ -1,0 +1,340 @@
+#VRML V1.0 ascii
+
+DEF Title Info { 
+	string "Computational Neurobiology Lab @ Baylor College of Medicine" }
+DEF SceneInfo Info {
+    string
+      "This is my first shot at VRML using the worse editor for VRML vi.
+Anyway, I managed to make this work and keep having fun trying out new 
+things.
+
+			Stay tune for more to come !
+									 07-20-95
+*********************************************************************************
+Christophe Person	- Senior Scientific Programmer
+Computational Neurobiology Laboratory at Baylor College of Medicine
+Email: chrisp@dirac.bcm.tmc.edu - 'Tof' often on IRC channel #france
+WWW:   http://dirac.bcm.tmc.edu/chrisp.html
+*********************************************************************************
+
+"
+}
+
+    SpotLight {      # Light from above
+        location 0 1 0
+        direction 0 -1 0
+        intensity       1
+        cutOffAngle     1.9
+    }
+
+    PerspectiveCamera {
+        position    0 2 20
+        orientation 0 4 0  0
+        focalDistance       10.84
+    }
+
+
+    DirectionalLight {
+        direction 0 0 -1  # Light shining from viewer into scene
+	intensity 4.0
+    }
+    
+    FontStyle {
+                size     1      # SFFloat
+                family   SERIF   # SFEnum
+                style    BOLD    # SFBitMask
+           }
+ 
+    AsciiText {
+                string         "Computational Neurobiology Lab"    # MFString
+                spacing        1     # SFFloat
+                justification  CENTER  # SFEnum
+                width          0     # MFFloat
+           }
+   Translation { translation 0 -2.5 -4.5 }
+
+    Separator {      # Main Room
+       Coordinate3 {
+           point [
+			-4 2 -4, -4 2 4, 4 2 4, 4 2 -4,
+			0 5 0 ]
+	}
+	Material {
+		diffuseColor 0 0 1 
+		transparency 0.5
+	}
+	IndexedFaceSet {
+    		coordIndex [ 3, 4, 0, -1]
+	}
+
+    }
+    Separator {      # Main Room
+        Coordinate3 {
+            point [
+                   -4 0 -4, -4 0 4, 4 0 4, 4 0 -4,
+                   -4 2 -4, -4 2 4, 4 2 4, 4 2 -4]
+        }
+	Material {
+                diffuseColor 1 1 1
+           }
+
+	Texture2 {
+          filename    "http://dirac.bcm.tmc.edu/textures/floor_0.rgb"
+	  image       0 0 0     # SFImage
+          wrapS       REPEAT    # SFEnum
+          wrapT       REPEAT    # SFEnum
+        }
+	Texture2Transform {
+          translation  0 0      # SFVec2f
+          rotation     0        # SFFloat
+          scaleFactor  16 16       # SFVec2f
+          center       0 0      # SFVec2f
+        }
+
+        IndexedFaceSet {
+            coordIndex [ 0, 1, 2, 3, -1] 
+	}
+
+        IndexedFaceSet {
+            coordIndex [ 0, 4, 5, 1, -1,
+			 0, 3, 7, 4, -1,
+			 3, 2, 6, 7, -1 ] 
+	}
+
+    }
+    Separator {      # Main Floor
+        Coordinate3 {
+            point [
+                   -14 -0.01 -14, -14 -0.01 14, 14 -0.01 14, 14 -0.01 -14]
+        }
+        Material {
+                diffuseColor 0 0.7 0
+           }
+
+        IndexedFaceSet {
+            coordIndex [ 0, 1, 2, 3, -1]
+        }
+    }
+
+    Separator {      # Main Road
+	Coordinate3 {
+            point [
+                   -1 0 4.001, -1 0 14, 1 0 14, 1 0 4.001]
+        }
+        Material {
+                diffuseColor 1 1 1
+           }
+        Texture2 {
+                filename    "http://dirac.bcm.tmc.edu/textures/gravel.rgb"
+                image       0 0 0     # SFImage
+                wrapS       REPEAT    # SFEnum
+                wrapT       REPEAT    # SFEnum
+           }
+	Texture2Transform {
+          translation  0 0      # SFVec2f
+          rotation     0        # SFFloat
+          scaleFactor  8 8       # SFVec2f
+          center       0 0      # SFVec2f
+        }
+
+        IndexedFaceSet {
+            coordIndex [ 0, 1, 2, 3, -1]
+        }
+    }
+
+
+    WWWAnchor {   # MY HOMEPAGE
+        name "http://dirac.bcm.tmc.edu/chrisp.html"
+
+        Separator {
+            Translation { translation 2.5 1 3.3 }
+	   Material {
+		diffuseColor 1 1 1
+	   }
+	   FontStyle {
+          	size     0.15      # SFFloat
+          	family   SERIF   # SFEnum
+          	style    BOLD    # SFBitMask
+     	   }
+	   AsciiText {
+          	string         "Chris' Web Page"    # MFString
+          	spacing        1     # SFFloat
+          	justification  CENTER  # SFEnum
+          	width          0     # MFFloat
+     	   }
+	   Translation { translation 0 0.5 0 }
+	   Material {
+                diffuseColor 1 1 1 
+	   }
+
+	   Texture2 {
+          	filename    "http://dirac.bcm.tmc.edu/textures/cpface.rgb"
+		image       0 0 0     # SFImage
+          	wrapS       REPEAT    # SFEnum
+          	wrapT       REPEAT    # SFEnum
+           }
+	   Cube{
+		width 0.5
+		depth 0.5
+		height 0.5
+	    }
+	}
+   }
+   WWWAnchor {   # DAVID HOME PAGE
+        name "http://dirac.bcm.tmc.edu/people/david.html"
+
+        Separator {
+            Translation { translation -2 1 -2 }
+           Material {
+                diffuseColor 0 0 1
+           }
+           FontStyle {
+                size     0.15      # SFFloat
+                family   SERIF   # SFEnum
+                style    BOLD    # SFBitMask
+           }
+           AsciiText {
+                string         "David's Web Page"    # MFString
+                spacing        1     # SFFloat
+                justification  CENTER  # SFEnum
+                width          0     # MFFloat
+           }
+           Translation { translation 0 0.5 0 }
+           Material {
+                diffuseColor 1 1 1
+           }
+
+	   Texture2 {
+                filename    "http://dirac.bcm.tmc.edu/textures/david.rgb"
+		image       0 0 0     # SFImage
+                wrapS       REPEAT    # SFEnum
+                wrapT       REPEAT    # SFEnum
+           }
+           Cube{
+                width 0.5
+                depth 0.5
+                height 0.42732
+            }
+        }
+    }
+    WWWAnchor {   # BCM HOME PAGE
+        name "http://www.bcm.tmc.edu/"
+
+        Separator {
+            Translation { translation 2 1.8 -2 }
+           Material {
+                diffuseColor 1 1 0
+           }
+           FontStyle {
+                size     0.1      # SFFloat
+                family   SERIF   # SFEnum
+                style    BOLD    # SFBitMask
+           }
+           AsciiText {
+                string         "Baylor College of Medicine"    # MFString
+                spacing        1     # SFFloat
+                justification  CENTER  # SFEnum
+                width          0     # MFFloat
+           }
+           Translation { translation 0 -0.5 0 }
+           Material {
+                diffuseColor 1 1 1
+           }
+
+           Texture2 {
+                filename    "http://dirac.bcm.tmc.edu/textures/bcm.rgb"
+                image       0 0 0     # SFImage
+                wrapS       REPEAT    # SFEnum
+                wrapT       REPEAT    # SFEnum
+           }
+           Cube{
+                width 1
+                depth 1
+                height 0.6438
+            }
+        }
+    }
+    WWWAnchor {   # CNL PROJECTS
+        name "http://dirac.bcm.tmc.edu/projects.html"
+	Separator {
+            Translation { translation -3.2 1 3 }
+           Material {
+                diffuseColor 1 0 1
+           }
+           FontStyle {
+                size     0.15      # SFFloat
+                family   SERIF   # SFEnum
+                style    BOLD    # SFBitMask
+           }
+           AsciiText {
+                string         "Simulations"
+		spacing        1     # SFFloat
+                justification  CENTER  # SFEnum
+                width          0     # MFFloat
+           }
+  	   Translation { translation 0 0.6 0 }
+	   Material {
+                diffuseColor 1 1 1
+           }
+
+           Texture2 {
+                filename    "http://dirac.bcm.tmc.edu/textures/neurons.rgb"
+		image       0 0 0     # SFImage
+                wrapS       REPEAT    # SFEnum
+                wrapT       REPEAT    # SFEnum
+           }
+	   Sphere {
+		radius 0.5
+	   }
+	}
+    }
+WWWAnchor {   # CNL Home Page
+        name "http://dirac.bcm.tmc.edu/index.html"
+        Separator {
+            Translation { translation 0 1.26 0}
+           Material {
+                diffuseColor 0 1 1
+           }
+           FontStyle {
+                size     0.18      # SFFloat
+                family   SERIF   # SFEnum
+                style    BOLD    # SFBitMask
+           }
+           AsciiText {
+                string         "CNL WWW Page"
+                spacing        1     # SFFloat
+                justification  CENTER  # SFEnum
+                width          0     # MFFloat
+           }
+           Translation { translation 0 0 -0.2 }
+           Material {
+                diffuseColor 1 1 1
+           }
+
+           Texture2 {
+                filename    "http://dirac.bcm.tmc.edu/textures/marble.rgb"
+                image       0 0 0     # SFImage
+                wrapS       REPEAT    # SFEnum
+                wrapT       REPEAT    # SFEnum
+           }
+	   Cone {
+	   	parts         ALL
+          	bottomRadius  0.2
+          	height         2.5
+           }
+        }
+    }
+
+    Separator {
+            Translation { translation 2 1.3 -2 }
+           Material {
+                diffuseColor 1 1 1
+		transparency 0.8
+           }
+           Cube{
+                width 1.4
+                depth 1.4
+                height 0.92
+            }
+        }
+

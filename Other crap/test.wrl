@@ -1,0 +1,21 @@
+#VRML V1.0 ascii
+
+Separator {
+	Info { string "Virtus WalkThrough VRML 1.0
+	VRML Export Filter
+	Virtus Corporation
+	118 MacKenan Drive, Suite 250
+	Cary, NC 27511
+	919-467-9700"}
+
+	ShapeHints {
+		vertexOrdering	CLOCKWISE
+		shapeType	SOLID
+		}
+
+	Transform {
+		translation 0 0 0
+		scaleFactor 1.0 1.0 1.0
+		}
+
+}

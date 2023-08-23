@@ -1,0 +1,87 @@
+#VRML V1.0 ascii
+
+Separator{
+DEF Viewer Info{
+string "walk"
+}
+DEF BackgroundColor Info{
+string "0 .2 .5"
+}
+DEF Start PerspectiveCamera{
+position 0 5 25
+}
+Separator{
+WWWInline{
+bboxSize 100 1 100
+bboxCenter 0 0 0
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/aqFloorLo.wrl"
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/chewing.au"
+Translation{translation 0 3 0}
+DEF Fish WWWInline{
+bboxSize 4.758680 4.315190 1.084443
+bboxCenter 0.010500 0.132055 -0.155007
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/aqFishLo.wrl"
+}
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/chewing.au"
+Translation{translation 20 4 10}
+Rotation{rotation 0 1 0 1}
+USE Fish
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/chewing.au"
+Translation{translation -30 2 20}
+Rotation{rotation 0 1 0 -.4}
+USE Fish
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/bubble1.au"
+Translation{translation 6 4 -3}
+Rotation{rotation 0 1 0 -.1}
+DEF F15 WWWInline{
+bboxSize 5.566080 1.247566 4.093850
+bboxCenter 0.196910 0.441837 -0.518525
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/aqF15Lo.wrl"
+}
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/bubble1.au"
+Translation{translation -24 6 -14}
+Rotation{rotation 0 1 0 1.2}
+USE F15
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/bubble2.au"
+Translation{translation -7 5 5}
+Rotation{rotation 0 1 0 -1.2}
+DEF Plane WWWInline{
+bboxSize 6.880000 2.323350 9.025900
+bboxCenter -1.440000 0.025575 0.000000
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/aqPlaneLo.wrl"
+}
+}
+}
+Separator{
+WWWAnchor{
+name "http://jaka.eecs.uic.edu/dave/vrml/CAVE/bubble2.au"
+Translation{translation 18 3 -20}
+Rotation{rotation 0 1 0 -1.4}
+USE Plane
+}
+}
+}

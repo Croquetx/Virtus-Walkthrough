@@ -1,0 +1,1 @@
+#include "VTypes.h"struct V_Region:indirect	{#if MACINTOSH	RgnHandle	maskRegion;	RgnHandle	allRegion;#elif WINDOWS	HRGN		maskRegion;	HRGN		allRegion;#endif //MACINTOSH		void cRegion(struct V_Array *);	int AddCompliment(struct V_Array *);	int Compliment(void);	void dRegion(void);	};

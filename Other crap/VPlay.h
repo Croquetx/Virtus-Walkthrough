@@ -1,0 +1,1 @@
+#ifndef __VPRO_DEFS#define __VPRO_DEFS#include <MacHeadersPPC>#undef TRUE#undef FALSE#define VR 1#define VPLAYER 1#define ENGLISH 1//typedef struct indirect//	{//	} indirect;#endif //__VPRO_DEFS

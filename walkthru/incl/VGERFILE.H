@@ -1,0 +1,1 @@
+#ifndef VOYAGER_FILE#define VOYAGER_FILE#include "VFile.h"struct VoyagerFile:V_File	{	void cVoyagerFile(void);	int FindVoyager(void);	};#endif //VOYAGER_FILE

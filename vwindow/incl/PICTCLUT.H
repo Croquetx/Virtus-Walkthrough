@@ -1,0 +1,1 @@
+CTabHandle CollectColors(PicHandle fromPicture, short *depthPtr, short *directFlagPtr);

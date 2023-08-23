@@ -1,2 +1,2 @@
 # Virtus Walkthrough
- Virtus Walkthrough Pro Sources
+ Virtus Walkthrough 2.5 Sources

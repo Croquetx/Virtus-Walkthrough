@@ -1,0 +1,1 @@
+#ifndef CAD_DRAWING#define CAD_DRAWING#include "Drawing.h"struct CAVDrawing:WalkDrawing	{	struct Polyhedron *NewPolyhedron(void); 	};#endif // CAD_DRAWING

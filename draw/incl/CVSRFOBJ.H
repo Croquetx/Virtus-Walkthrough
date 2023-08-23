@@ -1,0 +1,1 @@
+#ifndef CAV_SURFOBJECT#define CAV_SURFOBJECT#include "CVObj.h"struct CAVSurfObject:CAVObject	{	void	DisplayFeature(struct DisplayInfo *);	};#endif //CAV_SURFOBJECT

@@ -1,0 +1,1 @@
+#ifndef TUMBLE_PIN_BUTTON#define TUMBLE_PIN_BUTTON#include "CadBtn.h"struct TumblePinButton:CadButton	{	int pin;	void cButtonSet(void);	void MouseDown(int,long);	int GetPin(void);	};	#endif //TUMBLE_PIN_BUTTON

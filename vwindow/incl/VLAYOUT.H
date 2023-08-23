@@ -1,0 +1,1 @@
+#ifndef LAYOUT#define LAYOUT#include "VDialog.h"extern LayoutSpec systemLayoutSpec[];	typedef enum SystemLayoutID{/* PREFERENCE DIALOGS */	inputTitleField = 0 ,	inputTextField,	inputNumberField,	inputCancelField,	inputOKField	} SystemLayoutID;#endif //LAYOUT

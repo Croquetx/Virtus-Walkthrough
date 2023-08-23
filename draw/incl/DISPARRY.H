@@ -1,0 +1,1 @@
+#ifndef DISP_ARRAY#define DISP_ARRAY#include "VArray.h"struct DispArray:V_Array	{	int Compare(void *, void *);	void CleanUp(struct View *);	int CleanCompare(struct ClosePolys *,struct View *);	};#endif //DISP_ARRAY

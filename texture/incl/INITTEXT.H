@@ -1,0 +1,1 @@
+/*prototypes for functions to init and delete permanent arrays used by the texture   code*/voidInitTextureMapping(void);voidEndTextureMapping(void);

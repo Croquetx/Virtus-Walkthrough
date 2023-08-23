@@ -1,0 +1,1 @@
+#ifndef _VR_LIBS_H_#define _VR_LIBS_H_void InitLib(V_Array *, char *, char *, unsigned long);void VRLibsInit(void);int	FindAllFilesInDir(V_Array *, char *, char *, ULong);void VRLibsDelete(void);#endif // _VR_LIBS_H_

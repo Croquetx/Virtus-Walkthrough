@@ -1,0 +1,1 @@
+#ifndef __VPRO_DEFS#define __DESIGN3D_DEFS#if __powerc#include <MacHeadersPPC>#else#include <MacHeaders68K>#endif //__powerc#undef TRUE#undef FALSE#define VR 1#define ENGLISH 1#define INCHES 1		// ABD-VRML3#define DEBUG 1#define VDIGS 0#define VRML_ANCHOR 1		// VRML-ABD 23JUN95#define SPECIAL_EDITION 0#define USE_HMD 1#endif //__DESIGN3D_DEFS
