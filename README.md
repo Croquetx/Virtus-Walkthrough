@@ -9,7 +9,11 @@ This is made available fully open source with the Apache 2 license.
 [Virtus Walkthrough](https://youtu.be/RKYMZzGPSjM?si=QQqrduYyLnZhfpEf)
 
 https://www.macintoshrepository.org/38511-virtus-walkthrough-1-x
+
 https://www.macintoshrepository.org/295-virtus-walkthrough-pro-2-0
+
 https://wiki.preterhuman.net/Virtus_Walkthrough_Pro
+
 https://www.wired.com/1994/04/gimme-some-space/
+
 https://www.geocities.ws/dragonerdriftr1/virtus.html
